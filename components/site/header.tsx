@@ -17,6 +17,7 @@ import { useScrolledPast } from "@/lib/use-scrolled-past";
 
 const MENU_ID = "menu-principal";
 const DESKTOP_QUERY = "(min-width: 80rem)";
+const DARK_HERO_ROUTES = ["/", "/expertises", "/realisations", "/equipe", "/recrutement"];
 
 const menuVariants: Variants = {
   hidden: { opacity: 0, transition: { duration: DURATION.base, ease: EASE_EVENTIA } },
@@ -49,7 +50,7 @@ function useActiveSection() {
     return () => observer.disconnect();
   }, [pathname]);
 
-  return pathname === "/contact" ? "contact" : active;
+  return navigation.find(({ href }) => href === pathname)?.id ?? active;
 }
 
 export function Header() {
@@ -60,6 +61,8 @@ export function Header() {
   const isScrolled = useScrolledPast(8);
   const activeSection = useActiveSection();
   const reduceMotion = useReducedMotion();
+  // Pages opening on a dark hero keep the bar transparent with light text until the user scrolls.
+  const isOverHero = DARK_HERO_ROUTES.includes(usePathname()) && !isScrolled;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -100,12 +103,13 @@ export function Header() {
     };
   }, [isOpen]);
 
-  function navigateFromMenu(event: MouseEvent<HTMLAnchorElement>, id: SectionId) {
+  function navigateFromMenu(event: MouseEvent<HTMLAnchorElement>, href: string) {
     if (!isOpen) return;
     setIsOpen(false);
 
-    const target = document.getElementById(id);
-    // Not on this page: let the link navigate to its route.
+    const id = href.split("#")[1];
+    const target = id ? document.getElementById(id) : null;
+    // Another route, or an anchor not on this page: let the link navigate.
     if (!target) return;
     event.preventDefault();
 
@@ -125,16 +129,18 @@ export function Header() {
         "fixed inset-x-0 top-0 z-50 border-b text-fg transition-[background-color,border-color,box-shadow] duration-300",
         isOpen
           ? "tone-deep border-transparent bg-canvas"
-          : isScrolled
-            ? "border-line bg-white/85 shadow-soft backdrop-blur-md"
-            : "border-transparent bg-transparent",
+          : isOverHero
+            ? "tone-deep border-transparent bg-transparent"
+            : isScrolled
+              ? "border-line bg-white/85 shadow-soft backdrop-blur-md"
+              : "border-transparent bg-transparent",
       )}
     >
       <Container className="flex h-(--header-height) items-center gap-6">
         <NextLink
           href="/#accueil"
           aria-label={`${siteConfig.name} — retour à l’accueil`}
-          onClick={(event) => navigateFromMenu(event, "accueil")}
+          onClick={(event) => navigateFromMenu(event, "/#accueil")}
           className="flex shrink-0 items-center gap-3 rounded-media"
         >
           <Logo preload />
@@ -171,7 +177,7 @@ export function Header() {
           <Link
             href={siteConfig.primaryCta.href}
             appearance="primary"
-            onClick={(event) => navigateFromMenu(event, "contact")}
+            onClick={(event) => navigateFromMenu(event, siteConfig.primaryCta.href)}
             className="animate-cta-pulse hover:animate-none focus-visible:animate-none"
           >
             {siteConfig.primaryCta.label}
@@ -211,7 +217,7 @@ export function Header() {
                         <NextLink
                           href={href}
                           aria-current={isActive ? "true" : undefined}
-                          onClick={(event) => navigateFromMenu(event, id)}
+                          onClick={(event) => navigateFromMenu(event, href)}
                           className={cn(
                             "flex items-baseline gap-5 py-4 font-display text-h3 transition-colors",
                             isActive ? "text-accent" : "text-fg hover:text-accent",
@@ -233,7 +239,7 @@ export function Header() {
                   href={siteConfig.primaryCta.href}
                   appearance="primary"
                   size="lg"
-                  onClick={(event) => navigateFromMenu(event, "contact")}
+                  onClick={(event) => navigateFromMenu(event, siteConfig.primaryCta.href)}
                   className="w-full"
                 >
                   {siteConfig.primaryCta.label}

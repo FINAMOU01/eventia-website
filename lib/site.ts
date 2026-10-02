@@ -28,10 +28,10 @@ export function whatsappHref(message: string = siteConfig.whatsapp.defaultMessag
 
 export const navigation = [
   { id: "accueil", label: "Accueil", href: "/#accueil" },
-  { id: "expertise", label: "Expertise", href: "/#expertise" },
-  { id: "realisations", label: "Réalisations", href: "/#realisations" },
-  { id: "equipe", label: "L’équipe", href: "/#equipe" },
-  { id: "recrutement", label: "Recrutement", href: "/#recrutement" },
+  { id: "expertise", label: "Expertises", href: "/expertises" },
+  { id: "realisations", label: "Réalisations", href: "/realisations" },
+  { id: "equipe", label: "L’équipe", href: "/equipe" },
+  { id: "recrutement", label: "Recrutement", href: "/recrutement" },
   { id: "contact", label: "Contact", href: "/contact" },
 ] as const;
 

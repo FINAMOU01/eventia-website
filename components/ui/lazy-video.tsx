@@ -3,7 +3,7 @@
 import { useReducedMotion } from "framer-motion";
 import { Pause, Play } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
 
@@ -11,7 +11,8 @@ export type MediaSource = string | StaticImageData;
 
 export type VideoSource = {
   src: string;
-  type: "video/mp4" | "video/webm";
+  /** May include a codecs parameter so unsupported sources are skipped. */
+  type: `video/mp4${string}` | `video/webm${string}`;
 };
 
 /**
@@ -29,11 +30,27 @@ type LazyVideoProps = {
   preload?: boolean;
   captions?: string;
   posterClassName?: string;
+  /** Position of the ambient play/pause button. */
+  controlClassName?: string;
 };
 
 function prefersDataSaving() {
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   return connection?.saveData === true;
+}
+
+const noopSubscribe = () => () => {};
+
+/** False on the server and when no source can be decoded (e.g. HEVC without hardware support). */
+function useCanPlay(sources: VideoSource[]) {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => {
+      const probe = document.createElement("video");
+      return sources.some((source) => probe.canPlayType(source.type) !== "");
+    },
+    () => false,
+  );
 }
 
 export function LazyVideo({
@@ -45,6 +62,7 @@ export function LazyVideo({
   preload,
   captions,
   posterClassName,
+  controlClassName = "right-3 bottom-3",
 }: LazyVideoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -54,9 +72,10 @@ export function LazyVideo({
   const [hasStarted, setHasStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const isAmbient = behavior === "ambient";
+  const canPlay = useCanPlay(sources);
 
   useEffect(() => {
-    if (!isAmbient || reduceMotion) return;
+    if (!isAmbient || reduceMotion || !canPlay) return;
     const node = containerRef.current;
     if (!node) return;
 
@@ -79,7 +98,7 @@ export function LazyVideo({
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [isAmbient, reduceMotion]);
+  }, [isAmbient, reduceMotion, canPlay]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -144,13 +163,13 @@ export function LazyVideo({
         </video>
       )}
 
-      {isAmbient ? (
+      {!canPlay ? null : isAmbient ? (
         <IconButton
           label={isPlaying ? "Mettre la vidéo en pause" : "Lire la vidéo"}
           icon={isPlaying ? <Pause /> : <Play />}
           variant="overlay"
           onClick={handleToggle}
-          className="absolute right-3 bottom-3 z-10"
+          className={cn("absolute z-10", controlClassName)}
         />
       ) : (
         !shouldLoad && (

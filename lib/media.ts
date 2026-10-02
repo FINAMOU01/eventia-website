@@ -1,4 +1,5 @@
 import type { FrameMedia } from "@/components/ui/media-frame";
+import type { VideoSource } from "@/components/ui/lazy-video";
 
 export type PlaceholderMotif = "arch" | "spotlight" | "portrait";
 
@@ -11,23 +12,20 @@ export type MediaSlot = {
   media?: FrameMedia;
 };
 
+export const heroVideo = {
+  // Web encode of the client spot (master kept outside the project: eventia-assets/hero/Spot eventia.MOV).
+  // H.264 1080p 30 fps, no audio, faststart.
+  sources: [{ src: "/media/hero/hero.mp4", type: "video/mp4" }],
+  poster: "/media/hero/hero.jpg",
+  alt: "Hôtesses EVENTIA en uniforme bleu lors d’un événement",
+} satisfies { sources: VideoSource[]; poster: string; alt: string };
+
 /*
  * Media manifest. To publish a real asset, drop the file in /public/media/... and set `media`, e.g.
  * media: { kind: "video", sources: [{ src: "/media/hero/hero-video.mp4", type: "video/mp4" }],
  *          poster: "/media/hero/hero-poster.jpg", alt: "…" }
  */
 export const mediaSlots = {
-  hero: {
-    label: "Vidéo d’accueil",
-    files: ["/media/hero/hero.jpg"],
-    motif: "arch",
-    media: {
-      kind: "image",
-      src: "/media/hero/hero.jpg",
-      alt: "Hôtesses EVENTIA en uniforme bleu posant autour d’un kakémono Eventia",
-    },
-  },
-
   "expertise-accueil": {
     label: "Accueil & représentation",
     files: ["/media/expertise/01-accueil-representation.jpg"],
@@ -56,18 +54,13 @@ export const mediaSlots = {
 
   "realisation-littoral-main": {
     label: "Littoral & Sud-Ouest 2026",
-    files: ["/media/realisations/littoral-sud-ouest-2026/main.jpg", "/media/realisations/littoral-sud-ouest-2026/video.mp4"],
+    files: ["/media/realisations/littoral-sud-ouest-2026/main.jpg"],
     motif: "spotlight",
   },
-  "realisation-littoral-detail-1": {
-    label: "Littoral & Sud-Ouest — détail",
+  "realisation-littoral-detail": {
+    label: "Littoral & Sud-Ouest 2026 — détail",
     files: ["/media/realisations/littoral-sud-ouest-2026/detail-1.jpg"],
     motif: "portrait",
-  },
-  "realisation-littoral-detail-2": {
-    label: "Littoral & Sud-Ouest — détail",
-    files: ["/media/realisations/littoral-sud-ouest-2026/detail-2.jpg"],
-    motif: "arch",
   },
   "realisation-miss-main": {
     label: "Miss Cameroun 2026",
@@ -79,7 +72,17 @@ export const mediaSlots = {
       alt: "Hôtesses EVENTIA en uniforme bleu présentant les écharpes des lauréates sur la scène de Miss Cameroun",
     },
   },
-  "realisation-miss-detail-1": {
+  "realisation-miss-side": {
+    label: "Miss Cameroun 2026 — photo",
+    files: ["/media/realisations/miss-cameroun-2026/miss cameroun3.png"],
+    motif: "portrait",
+    media: {
+      kind: "image",
+      src: "/media/realisations/miss-cameroun-2026/miss cameroun3.png",
+      alt: "Remise des écharpes sur la scène de la finale Miss Cameroun, avec une hôtesse EVENTIA en robe bleue",
+    },
+  },
+  "realisation-miss-detail": {
     label: "Miss Cameroun 2026 — détail",
     files: ["/media/realisations/miss-cameroun-2026/miss cameroun2.jpg"],
     motif: "arch",
@@ -89,18 +92,7 @@ export const mediaSlots = {
       alt: "Hôtesses EVENTIA remettant les sacs cadeaux aux candidates sur scène lors de Miss Cameroun",
     },
   },
-  "realisation-miss-detail-2": {
-    label: "Miss Cameroun 2026 — détail",
-    files: [],
-    motif: "portrait",
-    media: {
-      kind: "embed",
-      // width/height match the 4:3 frame so the vertical reel is letterboxed, not cropped.
-      src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent("https://www.facebook.com/reel/1539301614901692")}&show_text=false&width=800&height=600`,
-      title: "Vidéo EVENTIA — Miss Cameroun 2026",
-    },
-  },
-  "realisation-comica-main": {
+  "realisation-comica": {
     label: "Partenariat COMICA",
     files: ["/media/realisations/comica/COMICA_partenariat.jpg"],
     motif: "arch",
@@ -111,25 +103,16 @@ export const mediaSlots = {
       fit: "contain",
     },
   },
-  "realisation-comica-detail-1": {
-    label: "COMICA — détail",
-    files: ["/media/realisations/comica/detail-1.jpg"],
-    motif: "spotlight",
-  },
-  "realisation-comica-detail-2": {
-    label: "COMICA — détail",
-    files: ["/media/realisations/comica/detail-2.jpg"],
-    motif: "portrait",
-  },
 
   "equipe-noura": {
     label: "Portrait — Noura Njikam",
-    files: ["/media/equipe/noura.jpg"],
+    files: ["/media/equipe/NouraPDG.PNG"],
     motif: "portrait",
     media: {
       kind: "image",
-      src: "/media/equipe/noura.jpg",
-      alt: "Portrait de Noura Njikam, PDG d’EVENTIA BY N.J",
+      src: "/media/equipe/NouraPDG.PNG",
+      alt: "Portrait de Noura Njikam, PDG d’EVENTIA BY N.J, en tailleur bleu",
+      anchor: "top",
     },
   },
   "equipe-groupe": {
@@ -140,6 +123,16 @@ export const mediaSlots = {
       kind: "image",
       src: "/media/equipe/equipe1.jpg",
       alt: "Noura Njikam, Miss World Cameroun 2026, entourée des hôtesses EVENTIA en uniforme bleu",
+    },
+  },
+  "equipe-terrain": {
+    label: "L’équipe EVENTIA sur le terrain",
+    files: ["/media/hero/hero.jpg"],
+    motif: "portrait",
+    media: {
+      kind: "image",
+      src: "/media/hero/hero.jpg",
+      alt: "Hôtesses EVENTIA en uniforme bleu posant autour d’un kakémono Eventia",
     },
   },
 
@@ -154,9 +147,50 @@ export const mediaSlots = {
       anchor: "top",
     },
   },
+  "recrutement-equipe": {
+    label: "Les hôtesses EVENTIA",
+    files: ["/media/realisations/miss-cameroun-2026/mis cameroun4.PNG"],
+    motif: "spotlight",
+    media: {
+      kind: "image",
+      src: "/media/realisations/miss-cameroun-2026/mis cameroun4.PNG",
+      alt: "Les hôtesses EVENTIA en robes de satin bleu roi devant le mur Eventia",
+    },
+  },
 } satisfies Record<string, MediaSlot>;
 
 export type MediaSlotId = keyof typeof mediaSlots;
+
+export type ShowcasePhoto = {
+  /** `id` of the matching entry in `realisations` (lib/content.ts); its type and title caption the slide. */
+  realisationId: string;
+  src: string;
+  alt: string;
+};
+
+/** Homepage Réalisations carousel, in display order. Add an item to add a slide (real event photos only). */
+export const realisationsShowcase: ShowcasePhoto[] = [
+  {
+    realisationId: "miss-cameroun-2026",
+    src: "/media/realisations/miss-cameroun-2026/mis cameroun4.PNG",
+    alt: "Les hôtesses EVENTIA en robes de satin bleu roi devant le mur Eventia lors de Miss Cameroun 2026",
+  },
+  {
+    realisationId: "miss-cameroun-2026",
+    src: "/media/realisations/miss-cameroun-2026/misscameroun1.jpg",
+    alt: "Hôtesses EVENTIA en uniforme bleu présentant les écharpes des lauréates sur la scène de Miss Cameroun",
+  },
+  {
+    realisationId: "miss-cameroun-2026",
+    src: "/media/realisations/miss-cameroun-2026/miss cameroun3.png",
+    alt: "Remise des écharpes sur la scène de la finale Miss Cameroun, avec une hôtesse EVENTIA en robe bleue",
+  },
+  {
+    realisationId: "miss-cameroun-2026",
+    src: "/media/realisations/miss-cameroun-2026/miss cameroun2.jpg",
+    alt: "Hôtesses EVENTIA remettant les sacs cadeaux aux candidates sur scène lors de Miss Cameroun",
+  },
+];
 
 export function getMediaSlot(id: MediaSlotId): MediaSlot {
   return mediaSlots[id];
