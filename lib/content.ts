@@ -2,14 +2,15 @@ import type { LightboxVideo } from "@/components/ui/video-lightbox";
 import type { MediaSlotId } from "@/lib/media";
 import { siteConfig } from "@/lib/site";
 
-// Taglines and method steps are client-approved; descriptions paraphrase the client brief.
+// Expertise titles/descriptions and method steps are the client's exact wording.
 
 export type Expertise = {
   id: string;
   number: string;
   title: string;
-  tagline: string;
   description: string;
+  /** "coeur": historical core offer (01–05); "elargie": offer extensions (06–09). */
+  group: "coeur" | "elargie";
   slot: MediaSlotId;
 };
 
@@ -18,43 +19,73 @@ export const expertises: Expertise[] = [
     id: "accueil-representation",
     number: "01",
     title: "Accueil & représentation",
-    tagline: "Le premier contact qui valorise votre image.",
-    description:
-      "Nos équipes accueillent, orientent et représentent votre marque auprès de votre public, avec élégance et professionnalisme.",
+    description: "Premier contact, première impression\u00a0: valoriser votre image auprès de vos publics.",
+    group: "coeur",
     slot: "expertise-accueil",
   },
   {
     id: "protocole-accompagnement",
     number: "02",
     title: "Protocole & accompagnement",
-    tagline: "Accueillir et accompagner vos invités avec attention.",
-    description: "Nos équipes accueillent, guident et accompagnent vos invités tout au long de votre événement.",
+    description: "Accueillir et accompagner vos invités avec attention et professionnalisme.",
+    group: "coeur",
     slot: "expertise-protocole",
   },
   {
     id: "organisation-evenementielle",
     number: "03",
     title: "Organisation événementielle",
-    tagline: "Des équipes engagées pour contribuer au bon déroulement de vos événements.",
-    description: "EVENTIA met à votre disposition un personnel qui contribue au bon déroulement de votre événement.",
+    description: "Des équipes mobilisées pour contribuer au bon déroulement de vos événements.",
+    group: "coeur",
     slot: "expertise-organisation",
   },
   {
     id: "activation-produits-marques",
     number: "04",
     title: "Activation de produits & de marques",
-    tagline: "Créer une interaction entre votre marque et votre public.",
-    description:
-      "Nos équipes participent à vos activations de produits et de marques et créent de véritables échanges avec votre public.",
+    description: "Créer une interaction forte entre votre marque, vos produits et votre public.",
+    group: "coeur",
     slot: "expertise-activation",
   },
   {
     id: "personnel-sur-mesure",
     number: "05",
     title: "Personnel événementiel sur mesure",
-    tagline: "Des équipes adaptées aux exigences de votre événement.",
-    description: "EVENTIA constitue ses équipes selon les besoins spécifiques de chaque mission.",
+    description: "Des équipes adaptées à vos besoins, à votre événement et à votre image.",
+    group: "coeur",
     slot: "expertise-personnel",
+  },
+  {
+    id: "wedding-planning",
+    number: "06",
+    title: "Wedding Planning",
+    description: "Imaginer et orchestrer des célébrations qui vous ressemblent.",
+    group: "elargie",
+    slot: "expertise-wedding",
+  },
+  {
+    id: "decoration-evenementielle",
+    number: "07",
+    title: "Décoration événementielle",
+    description: "Créer des univers élégants, cohérents et mémorables.",
+    group: "elargie",
+    slot: "expertise-decoration",
+  },
+  {
+    id: "restauration-evenementielle",
+    number: "08",
+    title: "Restauration événementielle",
+    description: "Proposer une expérience culinaire adaptée à chaque occasion.",
+    group: "elargie",
+    slot: "expertise-restauration",
+  },
+  {
+    id: "gestion-image",
+    number: "09",
+    title: "Gestion d’image",
+    description: "Soigner votre présence, votre image et celle de votre événement.",
+    group: "elargie",
+    slot: "expertise-image",
   },
 ];
 
@@ -79,8 +110,8 @@ export type Realisation = {
   /** Event type, shown before the event name (e.g. "Concours régional"). */
   type: string;
   title: string;
-  /** Lead visual, side visual, then an optional third visual below. */
-  slots: [MediaSlotId, MediaSlotId, MediaSlotId?];
+  /** Lead visual, side visual, then up to two optional visuals below. */
+  slots: [MediaSlotId, MediaSlotId, MediaSlotId?, MediaSlotId?];
 };
 
 export const realisations: Realisation[] = [
@@ -96,7 +127,7 @@ export const realisations: Realisation[] = [
     number: "02",
     type: "Finale nationale",
     title: "Miss Cameroun 2026",
-    slots: ["realisation-miss-main", "realisation-miss-side", "realisation-miss-detail"],
+    slots: ["realisation-miss-main", "realisation-miss-side", "realisation-miss-detail", "realisation-miss-extra"],
   },
 ];
 

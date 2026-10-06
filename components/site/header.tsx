@@ -17,7 +17,7 @@ import { useScrolledPast } from "@/lib/use-scrolled-past";
 
 const MENU_ID = "menu-principal";
 const DESKTOP_QUERY = "(min-width: 80rem)";
-const DARK_HERO_ROUTES = ["/", "/expertises", "/realisations", "/equipe", "/recrutement"];
+const DARK_HERO_ROUTES = ["/", "/expertises", "/realisations", "/equipe", "/recrutement", "/contact"];
 
 const menuVariants: Variants = {
   hidden: { opacity: 0, transition: { duration: DURATION.base, ease: EASE_EVENTIA } },

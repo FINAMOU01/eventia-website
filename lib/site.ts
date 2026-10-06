@@ -19,6 +19,7 @@ export const siteConfig = {
     number: "237656697272",
     // Neutral until the name of the person answering is confirmed.
     defaultMessage: "Bonjour, je souhaite obtenir des informations concernant les services EVENTIA.",
+    contactMessage: "Bonjour, je souhaite échanger avec EVENTIA au sujet d’un événement.",
   },
 } as const;
 

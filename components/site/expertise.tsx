@@ -3,7 +3,6 @@ import { SectionHeader } from "@/components/site/section-header";
 import { Link } from "@/components/ui/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import { cn } from "@/lib/cn";
 import { expertises } from "@/lib/content";
 
 /** Homepage preview; the full content lives on /expertises. */
@@ -22,36 +21,32 @@ export function Expertise() {
         }
       />
 
-      {/* 2 wide blocks then 3 narrower ones on desktop: a balanced 2 + 3 rhythm. */}
-      <RevealGroup
-        as="ol"
-        stagger={0.1}
-        className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 sm:gap-y-14 lg:mt-20 lg:grid-cols-6 lg:gap-x-14 lg:gap-y-16"
-      >
-        {expertises.map((item, index) => (
-          <RevealItem
-            as="li"
-            key={item.id}
-            className={cn(
-              "relative flex flex-col border-t border-line pt-8 lg:pt-10",
-              index < 2 ? "lg:col-span-3" : "lg:col-span-2",
-              index === expertises.length - 1 && "sm:col-span-2 lg:col-span-2",
-            )}
-          >
-            <span aria-hidden="true" className="absolute -top-px left-0 h-px w-12 bg-accent" />
+      <RevealGroup as="ol" stagger={0.07} className="mt-14 border-b border-line lg:mt-20">
+        {expertises.map((item) => (
+          <RevealItem as="li" key={item.id} className="group/row relative border-t border-line">
             <span
               aria-hidden="true"
-              className="font-display text-[clamp(2.5rem,2rem+1.5vw,3.5rem)] leading-none text-accent/30 italic"
-            >
-              {item.number}
-            </span>
-            <h3 className={cn("mt-6 font-display text-fg", index < 2 ? "text-h2" : "text-h3")}>{item.title}</h3>
-            <p className="mt-4 max-w-md text-body text-fg-muted">{item.tagline}</p>
+              className="absolute -top-px left-0 h-px w-12 bg-accent transition-[width] duration-700 ease-eventia group-hover/row:w-full"
+            />
+            <div className="site-grid items-baseline gap-y-3 py-7 lg:py-9">
+              <span
+                aria-hidden="true"
+                className="col-span-full font-display text-[clamp(1.75rem,1.4rem+1vw,2.5rem)] leading-none text-accent/30 italic transition-colors duration-500 group-hover/row:text-accent md:col-span-1"
+              >
+                {item.number}
+              </span>
+              <h3 className="col-span-full font-display text-[clamp(1.5rem,1.1rem+1.2vw,2.25rem)] leading-tight text-fg transition-transform duration-500 ease-eventia motion-safe:group-hover/row:translate-x-2 md:col-span-7 lg:col-span-6">
+                {item.title}
+              </h3>
+              <p className="col-span-full text-body text-fg-muted md:col-span-7 md:col-start-2 lg:col-span-5 lg:col-start-8">
+                {item.description}
+              </p>
+            </div>
           </RevealItem>
         ))}
       </RevealGroup>
 
-      <Reveal className="mt-14 border-t border-line pt-10 lg:mt-20">
+      <Reveal className="mt-12 lg:mt-16">
         <Link href="/expertises" appearance="primary" size="lg" icon={<ArrowRight />}>
           Découvrir nos expertises
         </Link>

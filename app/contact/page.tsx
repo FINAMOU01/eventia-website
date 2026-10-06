@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Contact } from "@/components/site/contact";
+import { ContactPage } from "@/components/site/contact-page";
 
 export const metadata: Metadata = {
   title: "Contact",
   description: "Demandez un devis ou contactez l’équipe EVENTIA BY N.J pour votre événement à Yaoundé.",
 };
 
-export default function ContactPage() {
+export default function Page() {
   return (
-    <main id="contenu" tabIndex={-1} className="pt-(--header-height)">
-      <Contact />
+    <main id="contenu" tabIndex={-1}>
+      <ContactPage />
     </main>
   );
 }

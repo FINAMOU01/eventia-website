@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import { MediaSlotFrame } from "@/components/site/media-slot-frame";
 import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -10,25 +11,46 @@ import { siteConfig } from "@/lib/site";
 
 function EquipeHero() {
   return (
-    <section aria-labelledby="equipe-page-titre" className="tone-deep relative isolate overflow-hidden bg-ink text-fg">
+    <section
+      aria-labelledby="equipe-page-titre"
+      className="tone-deep relative isolate flex h-[min(90svh,54rem)] min-h-[40rem] overflow-hidden bg-deep text-fg"
+    >
+      {/* The cut-out has a transparent background: this backdrop shows between the people. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgb(4_58_164/0.55),transparent_70%),radial-gradient(ellipse_60%_50%_at_0%_100%,rgb(0_48_106/0.8),transparent_70%)]"
+        className="pointer-events-none absolute inset-0 -z-30 bg-[radial-gradient(ellipse_80%_70%_at_60%_30%,rgb(4_58_164/0.9),transparent_70%),linear-gradient(to_bottom,var(--color-deep),var(--color-ink))]"
       />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-[0.06em] bottom-[-0.2em] -z-10 font-display text-[clamp(8rem,4rem+16vw,22rem)] leading-none text-white/[0.035] italic select-none"
-      >
-        L’équipe
-      </span>
+      {/* Starts below the fixed header so heads are never hidden or cropped. */}
+      <div className="absolute inset-x-0 top-[calc(var(--header-height)+1.5rem)] bottom-0 -z-20">
+        <Image
+          src="/media/equipe/equipe2-cutout.png"
+          alt="Noura Njikam, Miss World Cameroun 2026, entourée des hôtesses EVENTIA en uniforme bleu"
+          fill
+          preload
+          sizes="100vw"
+          className="object-cover object-top"
+        />
+      </div>
 
-      <Container className="pt-[calc(var(--header-height)+2.5rem)] pb-section lg:pt-[calc(var(--header-height)+3.5rem)]">
-        <RevealGroup stagger={0.14} delay={0.1} className="site-grid items-end gap-y-8">
-          <RevealItem className="col-span-full lg:col-span-8">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-deep/10" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-ink/85 via-ink/20 to-ink/30 lg:bg-linear-to-r lg:from-ink/75 lg:via-ink/25 lg:to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-linear-to-t from-ink/70 to-transparent"
+      />
+
+      <Container className="flex flex-1 flex-col justify-end pt-[calc(var(--header-height)+2rem)] pb-10 lg:pb-14">
+        <RevealGroup stagger={0.14} delay={0.1} className="max-w-3xl">
+          <RevealItem>
             <Eyebrow>L’équipe</Eyebrow>
+          </RevealItem>
+          <RevealItem>
             <h1
               id="equipe-page-titre"
-              className="mt-6 font-display text-[clamp(2.5rem,1.3rem+4.2vw,5.25rem)] leading-[1.05] tracking-[-0.015em] text-fg"
+              className="mt-6 font-display text-[clamp(2.5rem,1.3rem+3.8vw,5rem)] leading-[1.04] tracking-[-0.015em] text-white"
             >
               {team.headline.map((line, index) => (
                 <span key={line} className="block">
@@ -37,30 +59,12 @@ function EquipeHero() {
               ))}
             </h1>
           </RevealItem>
-          <RevealItem className="col-span-full lg:col-span-4 lg:pb-3">
-            <p className="max-w-md border-l border-accent/60 pl-5 text-lead text-fg-muted">{team.summary}</p>
+          <RevealItem>
+            <p className="mt-6 max-w-xl text-lead text-white/85">{team.summary}</p>
           </RevealItem>
         </RevealGroup>
       </Container>
     </section>
-  );
-}
-
-function TeamBand() {
-  return (
-    <div className="tone-deep bg-ink">
-      <Container className="pb-section">
-        <Reveal variant="fade">
-          <MediaSlotFrame
-            slot="equipe-groupe"
-            ratio="landscape"
-            tone="deep"
-            sizes="(min-width: 1280px) 1248px, 100vw"
-            className="md:aspect-[5/3]"
-          />
-        </Reveal>
-      </Container>
-    </div>
   );
 }
 
@@ -210,7 +214,6 @@ export function EquipePage() {
   return (
     <>
       <EquipeHero />
-      <TeamBand />
       <Vision />
       <Quote />
       <OurTeam />

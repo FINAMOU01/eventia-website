@@ -1,41 +1,72 @@
 "use client";
 
-import { AlertCircle, ArrowRight, Check } from "lucide-react";
-import { useState, type FormEvent, type ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { useReducedMotion } from "framer-motion";
+import { AlertCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { useState, type ChangeEvent, type FormEvent, type MouseEvent, type ReactNode } from "react";
+import { Button, ButtonContent, buttonClasses } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { cn } from "@/lib/cn";
-import { expertises } from "@/lib/content";
+import { submitQuoteRequest, type QuoteRequest } from "@/lib/quote-request";
 import { siteConfig } from "@/lib/site";
 
-type FieldName = "name" | "company" | "email" | "phone" | "date" | "location" | "eventType" | "details";
+export const QUOTE_FORM_ID = "demande-devis";
+
+type FieldName = keyof QuoteRequest;
 type Errors = Partial<Record<FieldName, string>>;
 
-const inputClasses =
-  "w-full border-b border-muted bg-transparent py-3 text-body text-fg transition-colors placeholder:text-fg-muted/70 hover:border-fg focus:border-accent aria-invalid:border-b-2 aria-invalid:border-fg";
+const REQUIRED_FIELDS: FieldName[] = ["name", "email", "need"];
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function errorMessage(field: HTMLInputElement | HTMLTextAreaElement) {
-  if (field.validity.valueMissing) return "Ce champ est requis.";
-  if (field.validity.typeMismatch) return "Merci de saisir une adresse e-mail valide.";
-  return field.validationMessage;
+const inputClasses =
+  "w-full rounded-none border-0 border-b border-input bg-transparent px-0 py-3 text-body text-fg transition-[border-color,box-shadow] duration-300 placeholder:text-fg-muted/60 hover:border-fg/40 focus:border-accent focus:shadow-[0_1px_0_0_var(--color-accent)] focus-visible:outline-none aria-invalid:border-fg aria-invalid:shadow-[0_1px_0_0_var(--color-fg)]";
+
+function fieldError(name: FieldName, value: string) {
+  const trimmed = value.trim();
+  if (REQUIRED_FIELDS.includes(name) && trimmed === "") return "Ce champ est requis.";
+  if (name === "email" && trimmed !== "" && !EMAIL_PATTERN.test(trimmed)) {
+    return "Merci de saisir une adresse e-mail valide.";
+  }
+  return undefined;
+}
+
+function readRequest(form: HTMLFormElement): QuoteRequest {
+  const data = new FormData(form);
+  const value = (name: FieldName) => String(data.get(name) ?? "");
+  return {
+    name: value("name"),
+    company: value("company"),
+    email: value("email"),
+    phone: value("phone"),
+    date: value("date"),
+    location: value("location"),
+    eventType: value("eventType"),
+    need: value("need"),
+  };
 }
 
 type FieldProps = {
   name: FieldName;
   label: string;
   errors: Errors;
-  required?: boolean;
   className?: string;
-  children: (props: { id: string; "aria-invalid"?: true; "aria-describedby"?: string }) => ReactNode;
+  children: (props: {
+    id: string;
+    name: FieldName;
+    required?: true;
+    "aria-invalid"?: true;
+    "aria-describedby"?: string;
+  }) => ReactNode;
 };
 
-function Field({ name, label, errors, required, className, children }: FieldProps) {
-  const id = `contact-${name}`;
+function Field({ name, label, errors, className, children }: FieldProps) {
+  const id = `devis-${name}`;
   const errorId = `${id}-erreur`;
   const error = errors[name];
+  const required = REQUIRED_FIELDS.includes(name);
 
   return (
-    <div className={cn("flex flex-col gap-1", className)}>
-      <label htmlFor={id} className="text-small font-medium text-fg">
+    <div className={cn("flex flex-col", className)}>
+      <label htmlFor={id} className="text-eyebrow font-medium tracking-[0.14em] text-fg-muted uppercase">
         {label}
         {required && (
           <span aria-hidden="true" className="text-accent">
@@ -44,10 +75,16 @@ function Field({ name, label, errors, required, className, children }: FieldProp
           </span>
         )}
       </label>
-      {children({ id, "aria-invalid": error ? true : undefined, "aria-describedby": error ? errorId : undefined })}
+      {children({
+        id,
+        name,
+        required: required || undefined,
+        "aria-invalid": error ? true : undefined,
+        "aria-describedby": error ? errorId : undefined,
+      })}
       {error && (
-        <p id={errorId} className="mt-1 flex items-center gap-1.5 text-small text-fg">
-          <AlertCircle aria-hidden="true" className="size-4 text-accent" />
+        <p id={errorId} className="mt-2 flex items-center gap-1.5 text-small text-fg">
+          <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-accent" />
           {error}
         </p>
       )}
@@ -55,135 +92,167 @@ function Field({ name, label, errors, required, className, children }: FieldProp
   );
 }
 
-function buildSummary(data: FormData) {
-  const needs = data.getAll("needs").map(String);
-  const lines = [
-    ["Nom & prénom", data.get("name")],
-    ["Société", data.get("company")],
-    ["E-mail", data.get("email")],
-    ["Téléphone", data.get("phone")],
-    ["Date", data.get("date")],
-    ["Lieu", data.get("location")],
-    ["Type d’événement", data.get("eventType")],
-    ["Besoin", needs.join(", ")],
-    ["Précisions", data.get("details")],
-  ]
-    .filter(([, value]) => typeof value === "string" && value.trim() !== "")
-    .map(([label, value]) => `${label} : ${value}`);
+/** "Demander un devis" CTA that brings the quote form into view and focuses its first field. */
+export function QuoteFormLink({ children, className }: { children: ReactNode; className?: string }) {
+  const reduceMotion = useReducedMotion();
 
-  return lines.join("\n");
+  function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+    const form = document.getElementById(QUOTE_FORM_ID);
+    if (!form) return;
+    event.preventDefault();
+    form.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    form.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+  }
+
+  return (
+    <a href={`#${QUOTE_FORM_ID}`} onClick={handleClick} className={buttonClasses({ size: "lg", className })}>
+      <ButtonContent variant="primary" icon={<ArrowRight />}>
+        {children}
+      </ButtonContent>
+    </a>
+  );
 }
 
 export function ContactForm() {
   const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<"idle" | "sent">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
 
   function validate(form: HTMLFormElement) {
+    const request = readRequest(form);
+    const names = Object.keys(request) as FieldName[];
     const nextErrors: Errors = {};
-    let firstInvalid: HTMLElement | null = null;
-
-    for (const element of Array.from(form.elements)) {
-      if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) continue;
-      if (element.type === "checkbox" || element.validity.valid) continue;
-      nextErrors[element.name as FieldName] = errorMessage(element);
-      firstInvalid ??= element;
+    for (const name of names) {
+      const error = fieldError(name, request[name]);
+      if (error) nextErrors[name] = error;
     }
-
     setErrors(nextErrors);
-    firstInvalid?.focus();
-    return firstInvalid === null;
+
+    const firstInvalid = names.find((name) => nextErrors[name]);
+    if (firstInvalid) form.querySelector<HTMLElement>(`[name="${firstInvalid}"]`)?.focus();
+    return firstInvalid ? null : request;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  // Once a field shows an error, re-check it as the visitor corrects it.
+  function handleChange(event: ChangeEvent<HTMLFormElement>) {
+    const field = event.target as unknown as HTMLInputElement | HTMLTextAreaElement;
+    const name = field.name as FieldName;
+    if (!errors[name]) return;
+    setErrors((current) => ({ ...current, [name]: fieldError(name, field.value) }));
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = event.currentTarget;
-    if (!validate(form)) return;
+    const request = validate(event.currentTarget);
+    if (!request) return;
 
-    const data = new FormData(form);
-    const eventType = String(data.get("eventType") ?? "").trim();
-    const subject = `Demande de devis${eventType ? ` — ${eventType}` : ""}`;
-    const body = `Bonjour,\n\nJe souhaite obtenir un devis pour mon événement.\n\n${buildSummary(data)}\n`;
+    setStatus("submitting");
+    try {
+      await submitQuoteRequest(request);
+      setStatus("success");
+    } catch {
+      setStatus("idle");
+    }
+  }
 
-    window.location.href = `mailto:${siteConfig.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setStatus("sent");
+  function startOver() {
+    setErrors({});
+    setStatus("idle");
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-8" aria-describedby="contact-mention">
-      <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
-        <Field name="name" label="Nom & prénom" required errors={errors}>
-          {(props) => <input {...props} name="name" type="text" autoComplete="name" required className={inputClasses} />}
-        </Field>
-        <Field name="company" label="Société" errors={errors}>
-          {(props) => <input {...props} name="company" type="text" autoComplete="organization" className={inputClasses} />}
-        </Field>
-        <Field name="email" label="E-mail" required errors={errors}>
-          {(props) => <input {...props} name="email" type="email" autoComplete="email" required className={inputClasses} />}
-        </Field>
-        <Field name="phone" label="Téléphone" errors={errors}>
-          {(props) => <input {...props} name="phone" type="tel" autoComplete="tel" className={inputClasses} />}
-        </Field>
-        <Field name="date" label="Date" errors={errors}>
-          {(props) => <input {...props} name="date" type="date" className={inputClasses} />}
-        </Field>
-        <Field name="location" label="Lieu" errors={errors}>
-          {(props) => <input {...props} name="location" type="text" placeholder="Ville, salle…" className={inputClasses} />}
-        </Field>
-        <Field name="eventType" label="Type d’événement" errors={errors} className="sm:col-span-2">
-          {(props) => (
-            <input
-              {...props}
-              name="eventType"
-              type="text"
-              placeholder="Concours, lancement de produit, salon, gala…"
-              className={inputClasses}
-            />
-          )}
-        </Field>
-      </div>
+    <div
+      id={QUOTE_FORM_ID}
+      role="region"
+      aria-labelledby="devis-titre"
+      className="rounded-card border border-line bg-surface p-6 sm:p-10 lg:p-12"
+    >
+      <Eyebrow id="devis-titre">Demande de devis</Eyebrow>
 
-      <fieldset className="flex flex-col gap-4">
-        <legend className="text-small font-medium text-fg">Besoin</legend>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {expertises.map((item) => (
-            <label
-              key={item.id}
-              className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-control border border-line px-4 text-small text-fg transition-colors select-none hover:border-accent has-checked:border-accent has-checked:bg-accent has-checked:text-canvas has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--tone-focus)"
-            >
-              <input type="checkbox" name="needs" value={item.title} className="peer sr-only" />
-              <Check aria-hidden="true" className="hidden size-4 peer-checked:block" />
-              {item.title}
-            </label>
-          ))}
+      {status === "success" ? (
+        <div role="status" className="mt-8 flex flex-col items-start gap-5">
+          <CheckCircle2 aria-hidden="true" className="size-10 text-accent" />
+          <p className="font-display text-h3 text-fg">Votre demande est prête.</p>
+          <p className="max-w-md text-body text-fg-muted">
+            Votre messagerie s’est ouverte avec votre demande pré-remplie : il vous suffit d’envoyer l’e-mail pour
+            nous la transmettre. Si elle ne s’est pas ouverte, écrivez-nous à{" "}
+            <a href={`mailto:${siteConfig.contact.email}`} className="text-accent underline underline-offset-4">
+              {siteConfig.contact.email}
+            </a>
+            .
+          </p>
+          <Button variant="text" onClick={startOver}>
+            Faire une nouvelle demande
+          </Button>
         </div>
-        <Field name="details" label="Précisez votre besoin" errors={errors}>
-          {(props) => (
-            <textarea
-              {...props}
-              name="details"
-              rows={3}
-              placeholder="Nombre de personnes, horaires, tenue, langues…"
-              className={cn(inputClasses, "resize-y")}
-            />
-          )}
-        </Field>
-      </fieldset>
+      ) : (
+        <form
+          noValidate
+          onSubmit={handleSubmit}
+          onChange={handleChange}
+          aria-busy={status === "submitting"}
+          aria-describedby="devis-mention"
+          className="mt-8 flex flex-col gap-8"
+        >
+          <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+            <Field name="name" label="Nom & prénom" errors={errors}>
+              {(props) => <input {...props} type="text" autoComplete="name" className={inputClasses} />}
+            </Field>
+            <Field name="company" label="Société" errors={errors}>
+              {(props) => <input {...props} type="text" autoComplete="organization" className={inputClasses} />}
+            </Field>
+            <Field name="email" label="E-mail" errors={errors}>
+              {(props) => (
+                <input {...props} type="email" autoComplete="email" inputMode="email" className={inputClasses} />
+              )}
+            </Field>
+            <Field name="phone" label="Téléphone" errors={errors}>
+              {(props) => <input {...props} type="tel" autoComplete="tel" inputMode="tel" className={inputClasses} />}
+            </Field>
+            <Field name="date" label="Date" errors={errors}>
+              {(props) => <input {...props} type="date" className={inputClasses} />}
+            </Field>
+            <Field name="location" label="Lieu" errors={errors}>
+              {(props) => <input {...props} type="text" placeholder="Ville, salle…" className={inputClasses} />}
+            </Field>
+            <Field name="eventType" label="Type d’événement" errors={errors} className="sm:col-span-2">
+              {(props) => (
+                <input
+                  {...props}
+                  type="text"
+                  placeholder="Concours, lancement de produit, salon, gala…"
+                  className={inputClasses}
+                />
+              )}
+            </Field>
+            <Field name="need" label="Besoin" errors={errors} className="sm:col-span-2">
+              {(props) => (
+                <textarea
+                  {...props}
+                  rows={5}
+                  placeholder="Nombre de personnes, horaires, profils, tenue, langues…"
+                  className={cn(inputClasses, "min-h-36 resize-y")}
+                />
+              )}
+            </Field>
+          </div>
 
-      <div>
-        <Button type="submit" size="lg" icon={<ArrowRight />} className="w-full sm:w-auto">
-          Envoyer ma demande
-        </Button>
-      </div>
-
-      <p id="contact-mention" className="text-small text-fg-muted">
-        Les champs marqués d’un <span className="text-accent">*</span> sont requis. Votre demande s’ouvre dans votre
-        messagerie, prête à être envoyée à {siteConfig.contact.email}.
-      </p>
-
-      <p role="status" className="text-small text-fg">
-        {status === "sent" &&
-          "Votre messagerie devrait s’ouvrir avec votre demande pré-remplie. Si ce n’est pas le cas, écrivez-nous directement par e-mail ou sur WhatsApp."}
-      </p>
-    </form>
+          <div className="flex flex-col gap-4">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={status === "submitting"}
+              icon={status === "submitting" ? <Loader2 className="animate-spin" /> : <ArrowRight />}
+              className="w-full sm:w-auto sm:self-start"
+            >
+              {status === "submitting" ? "Préparation…" : "Envoyer ma demande"}
+            </Button>
+            <p id="devis-mention" className="text-small text-fg-muted">
+              Les champs marqués d’un <span className="text-accent">*</span> sont requis. Votre demande s’ouvre dans
+              votre messagerie, prête à être envoyée à {siteConfig.contact.email}.
+            </p>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

@@ -20,37 +20,54 @@ export const heroVideo = {
   alt: "Hôtesses EVENTIA en uniforme bleu lors d’un événement",
 } satisfies { sources: VideoSource[]; poster: string; alt: string };
 
+function expertiseImage(label: string, file: string, alt: string): MediaSlot {
+  const src = `/media/expertise/${file}`;
+  return { label, files: [src], motif: "spotlight", media: { kind: "image", src, alt } };
+}
+
 /*
  * Media manifest. To publish a real asset, drop the file in /public/media/... and set `media`, e.g.
  * media: { kind: "video", sources: [{ src: "/media/hero/hero-video.mp4", type: "video/mp4" }],
  *          poster: "/media/hero/hero-poster.jpg", alt: "…" }
  */
 export const mediaSlots = {
-  "expertise-accueil": {
-    label: "Accueil & représentation",
-    files: ["/media/expertise/01-accueil-representation.jpg"],
-    motif: "portrait",
-  },
-  "expertise-protocole": {
-    label: "Protocole & accompagnement",
-    files: ["/media/expertise/02-protocole-accompagnement.jpg"],
-    motif: "arch",
-  },
-  "expertise-organisation": {
-    label: "Organisation événementielle",
-    files: ["/media/expertise/03-organisation-evenementielle.jpg"],
-    motif: "spotlight",
-  },
-  "expertise-activation": {
-    label: "Activation de produits & de marques",
-    files: ["/media/expertise/04-activation-produits-marques.jpg"],
-    motif: "spotlight",
-  },
-  "expertise-personnel": {
-    label: "Personnel événementiel sur mesure",
-    files: ["/media/expertise/05-personnel-sur-mesure.jpg"],
-    motif: "portrait",
-  },
+  "expertise-accueil": expertiseImage(
+    "Accueil & représentation",
+    "acceuil&presentation.jpg",
+    "Hôtesse EVENTIA en robe bleue accueillant un invité à l’entrée d’une réception",
+  ),
+  "expertise-protocole": expertiseImage(
+    "Protocole & accompagnement",
+    "orientation&accompagne.jpg",
+    "Hôtesse EVENTIA accompagnant un invité à travers une salle de réception",
+  ),
+  "expertise-organisation": expertiseImage(
+    "Organisation événementielle",
+    "organisation.jpg",
+    "Hôtesses EVENTIA vérifiant la mise en place d’une salle de réception avant l’arrivée des invités",
+  ),
+  "expertise-activation": expertiseImage(
+    "Activation de produits & de marques",
+    "lancement de produit.jpg",
+    "Hôtesses EVENTIA présentant des produits de beauté à des visiteuses sur un stand",
+  ),
+  "expertise-personnel": expertiseImage(
+    "Personnel événementiel sur mesure",
+    "personnel evenementiel sur mesure.jpg",
+    "Personnel événementiel EVENTIA lors d’un événement",
+  ),
+  "expertise-wedding": expertiseImage("Wedding Planning", "wedding planning.jpg", "Illustration Wedding Planning EVENTIA"),
+  "expertise-decoration": expertiseImage(
+    "Décoration événementielle",
+    "decoration.jpg",
+    "Illustration décoration événementielle EVENTIA",
+  ),
+  "expertise-restauration": expertiseImage(
+    "Restauration événementielle",
+    "restoration.jpg",
+    "Illustration restauration événementielle EVENTIA",
+  ),
+  "expertise-image": expertiseImage("Gestion d’image", "gestion de l'image.jpg", "Illustration gestion d’image EVENTIA"),
 
   "realisation-littoral-main": {
     label: "Littoral & Sud-Ouest 2026",
@@ -90,6 +107,16 @@ export const mediaSlots = {
       kind: "image",
       src: "/media/realisations/miss-cameroun-2026/miss cameroun2.jpg",
       alt: "Hôtesses EVENTIA remettant les sacs cadeaux aux candidates sur scène lors de Miss Cameroun",
+    },
+  },
+  "realisation-miss-extra": {
+    label: "Miss Cameroun 2026 — photo",
+    files: ["/media/realisations/miss-cameroun-2026/miss cameroun5.jpeg"],
+    motif: "spotlight",
+    media: {
+      kind: "image",
+      src: "/media/realisations/miss-cameroun-2026/miss cameroun5.jpeg",
+      alt: "Équipe d’hôtesses EVENTIA en robes longues bleues posant devant le mur de presse de Miss Cameroun 2026",
     },
   },
   "realisation-comica": {

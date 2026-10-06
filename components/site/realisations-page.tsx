@@ -9,7 +9,7 @@ import { Section } from "@/components/ui/section";
 import { VideoLightbox } from "@/components/ui/video-lightbox";
 import { cn } from "@/lib/cn";
 import { eventiaSpot, realisations, realisationsIntro, type Realisation } from "@/lib/content";
-import { getMediaSlot } from "@/lib/media";
+import type { MediaSlotId } from "@/lib/media";
 import { siteConfig } from "@/lib/site";
 
 function RealisationsHero() {
@@ -72,15 +72,11 @@ function Context() {
   );
 }
 
-function mediaSummary(item: Realisation) {
-  const photos = item.slots.filter((slot) => slot && getMediaSlot(slot).media).length;
-  return photos > 0 ? `${photos} photo${photos > 1 ? "s" : ""}` : "Photos et vidéos à venir";
-}
-
 function Project({ item, index }: { item: Realisation; index: number }) {
   const reversed = index % 2 === 1;
   const titleId = `${item.id}-titre`;
-  const [lead, side, extra] = item.slots;
+  const [lead, side, ...rest] = item.slots;
+  const others = rest.filter((slot): slot is MediaSlotId => Boolean(slot));
 
   return (
     <article id={item.id} aria-labelledby={titleId} className="border-b border-line py-section last:border-b-0">
@@ -107,56 +103,44 @@ function Project({ item, index }: { item: Realisation; index: number }) {
         </Reveal>
       </div>
 
-      <div className="site-grid mt-12 gap-y-6 lg:mt-16 lg:gap-y-0">
+      {/* Row 1: lead + side at equal height; then the remaining photos two by two. */}
+      <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-16 lg:grid-cols-12 lg:gap-6">
         <Reveal
           variant="fade"
-          className={cn("col-span-full lg:col-span-8 lg:row-start-1", reversed ? "lg:col-start-5" : "lg:col-start-1")}
+          className={cn("sm:col-span-2 lg:col-span-8 lg:row-start-1", reversed ? "lg:col-start-5" : "lg:col-start-1")}
         >
           <MediaSlotFrame slot={lead} ratio="landscape" tone="light" sizes="(min-width: 1024px) 66vw, 100vw" />
         </Reveal>
 
         <Reveal
           variant="fade"
-          delay={0.12}
+          delay={0.1}
           className={cn(
-            "col-span-full sm:col-span-4 lg:col-span-4 lg:row-start-1 lg:mt-28",
+            "lg:col-span-4 lg:row-start-1",
             reversed ? "lg:col-start-1" : "lg:col-start-9",
+            others.length % 2 === 0 && "sm:col-span-2",
           )}
         >
-          <MediaSlotFrame slot={side} ratio="portrait" tone="light" compact sizes="(min-width: 1024px) 30vw, 50vw" />
+          <MediaSlotFrame
+            slot={side}
+            ratio="fill"
+            tone="light"
+            compact
+            className="aspect-4/3 lg:aspect-auto"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          />
         </Reveal>
 
-        <Reveal
-          delay={0.15}
-          className={cn(
-            "col-span-full flex flex-col justify-end gap-3 sm:col-span-4 lg:col-span-3 lg:row-start-2 lg:pt-10",
-            reversed ? "lg:col-start-1" : "lg:col-start-9",
-          )}
-        >
-          <dl className="grid gap-4 border-l border-line pl-5 text-small">
-            <div>
-              <dt className="text-eyebrow text-fg-muted uppercase">Catégorie</dt>
-              <dd className="mt-1 text-fg">{realisationsIntro.category}</dd>
-            </div>
-            <div>
-              <dt className="text-eyebrow text-fg-muted uppercase">Médias</dt>
-              <dd className="mt-1 text-fg">{mediaSummary(item)}</dd>
-            </div>
-          </dl>
-        </Reveal>
-
-        {extra && (
+        {others.map((slot, i) => (
           <Reveal
+            key={slot}
             variant="fade"
-            delay={0.1}
-            className={cn(
-              "col-span-full sm:col-span-4 lg:col-span-5 lg:row-start-2 lg:mt-10",
-              reversed ? "lg:col-start-6" : "lg:col-start-2",
-            )}
+            delay={0.1 * (i % 2)}
+            className={cn("lg:col-span-6", others.length % 2 === 1 && i === others.length - 1 && "lg:col-span-12")}
           >
-            <MediaSlotFrame slot={extra} ratio="landscape" tone="light" sizes="(min-width: 1024px) 40vw, 50vw" />
+            <MediaSlotFrame slot={slot} ratio="landscape" tone="light" sizes="(min-width: 640px) 50vw, 100vw" />
           </Reveal>
-        )}
+        ))}
       </div>
     </article>
   );

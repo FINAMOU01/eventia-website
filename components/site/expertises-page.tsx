@@ -5,7 +5,6 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Link } from "@/components/ui/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import { cn } from "@/lib/cn";
 import { expertises, method, type Expertise } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
@@ -50,61 +49,63 @@ function ExpertisesHero() {
   );
 }
 
-function ExpertiseBlock({ item, index }: { item: Expertise; index: number }) {
-  const reversed = index % 2 === 1;
-  const titleId = `${item.id}-titre`;
+const expertiseGroups = [
+  { id: "coeur", label: "Cœur de métier", range: "01 — 05" },
+  { id: "elargie", label: "Offre élargie", range: "06 — 09" },
+] as const;
 
+function ExpertiseRow({ item }: { item: Expertise }) {
   return (
-    <article
-      id={item.id}
-      aria-labelledby={titleId}
-      className="group/expertise site-grid items-center gap-y-10 border-b border-line py-section last:border-b-0"
-    >
-      <Reveal
-        className={cn(
-          "col-span-full lg:col-span-5 lg:row-start-1",
-          reversed ? "lg:col-start-7 xl:col-start-8" : "lg:col-start-1",
-        )}
-      >
-        <div className="flex items-end gap-5">
-          <span
-            aria-hidden="true"
-            className="font-display text-[clamp(4.5rem,3rem+5vw,8.5rem)] leading-[0.8] text-accent/20 transition-[color,translate] duration-700 ease-eventia group-hover/expertise:text-accent/50 motion-safe:group-hover/expertise:-translate-y-1"
-          >
-            {item.number}
-          </span>
-          <Reveal as="span" variant="draw" delay={0.2} className="mb-2 block h-px flex-1 origin-left bg-line">
-            {null}
-          </Reveal>
-        </div>
-
-        <h2 id={titleId} className="mt-8">
-          <span className="block font-sans text-eyebrow font-medium tracking-[0.18em] text-accent uppercase">
+    <li id={item.id} className="group/expertise relative border-b border-line last:border-b-0">
+      <Reveal className="grid gap-6 py-10 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-10 lg:py-12 xl:grid-cols-[auto_minmax(0,1fr)_minmax(0,40%)] xl:items-center">
+        <span
+          aria-hidden="true"
+          className="font-display text-[clamp(3rem,2.2rem+3vw,5.5rem)] leading-[0.85] text-accent/20 transition-colors duration-700 ease-eventia group-hover/expertise:text-accent/60 sm:w-[2.2ch] xl:self-start"
+        >
+          {item.number}
+        </span>
+        <div className="min-w-0 sm:pt-2">
+          <h3 className="font-display text-h2 text-fg transition-transform duration-500 ease-eventia motion-safe:group-hover/expertise:translate-x-1.5">
             {item.title}
-          </span>
-          <span className="sr-only"> — </span>
-          <span className="mt-4 block font-display text-h2 text-fg">{item.tagline}</span>
-        </h2>
-        <p className="mt-6 max-w-text text-lead text-fg-muted">{item.description}</p>
-      </Reveal>
-
-      <Reveal
-        variant="fade"
-        delay={0.1}
-        className={cn(
-          "col-span-full lg:row-start-1",
-          reversed ? "lg:col-span-5 lg:col-start-1 xl:col-span-4 xl:col-start-2" : "lg:col-span-6 lg:col-start-7",
-        )}
-      >
+          </h3>
+          <p className="mt-4 max-w-text text-lead text-fg-muted">{item.description}</p>
+        </div>
         <MediaSlotFrame
           slot={item.slot}
-          ratio={reversed ? "portrait" : "landscape"}
+          ratio="landscape"
           tone="light"
-          sizes="(min-width: 1024px) 45vw, 100vw"
-          className={cn(reversed && "max-lg:aspect-4/3")}
+          className="sm:col-start-2 xl:col-start-3"
+          sizes="(min-width: 1280px) 25vw, (min-width: 640px) 70vw, 100vw"
         />
       </Reveal>
-    </article>
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-px left-0 h-px w-0 bg-accent transition-[width] duration-700 ease-eventia group-hover/expertise:w-full"
+      />
+    </li>
+  );
+}
+
+function ExpertiseGroup({ group }: { group: (typeof expertiseGroups)[number] }) {
+  const titleId = `expertises-${group.id}-titre`;
+  return (
+    <section aria-labelledby={titleId} className="site-grid gap-y-4 border-t border-line py-section first:border-t-0">
+      <div className="col-span-full lg:col-span-4">
+        <Reveal className="lg:sticky lg:top-[calc(var(--header-height)+2.5rem)]">
+          <Eyebrow>{group.range}</Eyebrow>
+          <h2 id={titleId} className="mt-5 font-display text-h3 text-fg">
+            {group.label}
+          </h2>
+        </Reveal>
+      </div>
+      <ol className="col-span-full lg:col-span-8">
+        {expertises
+          .filter((item) => item.group === group.id)
+          .map((item) => (
+            <ExpertiseRow key={item.id} item={item} />
+          ))}
+      </ol>
+    </section>
   );
 }
 
@@ -168,10 +169,10 @@ export function ExpertisesPage() {
   return (
     <>
       <ExpertisesHero />
-      <section aria-label="Nos cinq expertises" className="tone-light bg-canvas text-fg">
+      <section aria-label="Nos neuf expertises" className="tone-light bg-canvas text-fg">
         <Container>
-          {expertises.map((item, index) => (
-            <ExpertiseBlock key={item.id} item={item} index={index} />
+          {expertiseGroups.map((group) => (
+            <ExpertiseGroup key={group.id} group={group} />
           ))}
         </Container>
       </section>

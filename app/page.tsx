@@ -1,3 +1,4 @@
+import { Contact } from "@/components/site/contact";
 import { Equipe } from "@/components/site/equipe";
 import { Expertise } from "@/components/site/expertise";
 import { Hero } from "@/components/site/hero";
@@ -12,6 +13,7 @@ export default function Home() {
       <Realisations />
       <Equipe />
       <Recrutement />
+      <Contact />
     </main>
   );
 }
