@@ -65,7 +65,7 @@ function ExpertiseRow({ item }: { item: Expertise }) {
           {item.number}
         </span>
         <div className="min-w-0 sm:pt-2">
-          <h3 className="font-display text-h2 text-fg transition-transform duration-500 ease-eventia motion-safe:group-hover/expertise:translate-x-1.5">
+          <h3 className="font-display text-h2 [overflow-wrap:break-word] hyphens-auto text-fg transition-transform duration-500 ease-eventia motion-safe:group-hover/expertise:translate-x-1.5 xl:text-[clamp(1.75rem,0.9rem+1.1vw,2.5rem)]">
             {item.title}
           </h3>
           <p className="mt-4 max-w-text text-lead text-fg-muted">{item.description}</p>
