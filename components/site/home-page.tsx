@@ -4,16 +4,17 @@ import { Expertise } from "@/components/site/expertise";
 import { Hero } from "@/components/site/hero";
 import { Realisations } from "@/components/site/realisations";
 import { Recrutement } from "@/components/site/recrutement";
+import type { Locale } from "@/lib/i18n";
 
-export default function Home() {
+export function HomePage({ locale }: { locale: Locale }) {
   return (
-    <main id="contenu" tabIndex={-1}>
-      <Hero />
-      <Expertise />
-      <Realisations />
-      <Equipe />
-      <Recrutement />
-      <Contact />
-    </main>
+    <>
+      <Hero locale={locale} />
+      <Expertise locale={locale} />
+      <Realisations locale={locale} />
+      <Equipe locale={locale} />
+      <Recrutement locale={locale} />
+      <Contact locale={locale} />
+    </>
   );
 }

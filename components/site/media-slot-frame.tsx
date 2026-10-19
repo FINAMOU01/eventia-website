@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import { MediaPlaceholder } from "@/components/site/media-placeholder";
 import { MediaFrame, type MediaRatio } from "@/components/ui/media-frame";
+import type { Locale } from "@/lib/i18n";
 import { getMediaSlot, type MediaSlotId } from "@/lib/media";
 
 type MediaSlotFrameProps = {
   slot: MediaSlotId;
+  locale: Locale;
   ratio?: MediaRatio;
   sizes?: string;
   preload?: boolean;
@@ -18,6 +20,7 @@ type MediaSlotFrameProps = {
 /** Renders the real asset when declared in lib/media.ts, otherwise a labelled placeholder. */
 export function MediaSlotFrame({
   slot,
+  locale,
   ratio,
   sizes,
   preload,
@@ -27,7 +30,7 @@ export function MediaSlotFrame({
   className,
   children,
 }: MediaSlotFrameProps) {
-  const { media, label, files, motif } = getMediaSlot(slot);
+  const { media, label, files, motif } = getMediaSlot(slot, locale);
 
   return (
     <MediaFrame
@@ -39,7 +42,9 @@ export function MediaSlotFrame({
       caption={caption}
       className={className}
     >
-      {!media && <MediaPlaceholder label={label} files={files} motif={motif} tone={tone} compact={compact} />}
+      {!media && (
+        <MediaPlaceholder label={label} files={files} motif={motif} tone={tone} compact={compact} locale={locale} />
+      )}
       {children}
     </MediaFrame>
   );

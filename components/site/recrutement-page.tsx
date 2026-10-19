@@ -6,17 +6,73 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Link } from "@/components/ui/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import { applicationHref, recruitment } from "@/lib/content";
+import { getContent } from "@/lib/content";
+import type { Locale } from "@/lib/i18n";
 import { getMediaSlot, type MediaSlotId } from "@/lib/media";
 import { siteConfig } from "@/lib/site";
 
-function slotImage(id: MediaSlotId) {
-  const media = getMediaSlot(id).media;
+const copy = {
+  fr: {
+    eyebrow: "Recrutement",
+    title: (
+      <>
+        Rejoignez l’équipe <em className="text-accent italic">EVENTIA</em>
+      </>
+    ),
+    apply: "Postuler",
+    profiles: "Profils recherchés",
+    profilesTitle: (
+      <>
+        Des profils. Des personnalités. <em className="text-accent italic">Une même exigence.</em>
+      </>
+    ),
+    criteria: "Critères",
+    howTo: "Comment postuler",
+    sendTo: "Envoyez votre candidature à",
+    documents: "Documents demandés",
+    closingTitle: (
+      <>
+        Votre image commence par les <em className="text-accent italic">personnes qui vous représentent</em>.
+      </>
+    ),
+    closingCta: "Postuler chez EVENTIA",
+  },
+  en: {
+    eyebrow: "Careers",
+    title: (
+      <>
+        Join the <em className="text-accent italic">EVENTIA</em> team
+      </>
+    ),
+    apply: "Apply",
+    profiles: "Profiles we are looking for",
+    profilesTitle: (
+      <>
+        Profiles. Personalities. <em className="text-accent italic">One shared standard.</em>
+      </>
+    ),
+    criteria: "Criteria",
+    howTo: "How to apply",
+    sendTo: "Send your application to",
+    documents: "Documents required",
+    closingTitle: (
+      <>
+        Your image starts with the <em className="text-accent italic">people who represent you</em>.
+      </>
+    ),
+    closingCta: "Apply to EVENTIA",
+  },
+} satisfies Record<Locale, unknown>;
+
+function slotImage(id: MediaSlotId, locale: Locale) {
+  const media = getMediaSlot(id, locale).media;
   return media?.kind === "image" ? media : undefined;
 }
 
-function RecrutementHero() {
-  const image = slotImage("recrutement-equipe");
+function RecrutementHero({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { recruitment, applicationHref } = getContent(locale);
+  const image = slotImage("recrutement-equipe", locale);
 
   return (
     <section
@@ -35,14 +91,14 @@ function RecrutementHero() {
       <Container className="flex flex-1 flex-col justify-end pt-[calc(var(--header-height)+3rem)] pb-section lg:pb-16">
         <RevealGroup stagger={0.14} delay={0.1} className="max-w-3xl">
           <RevealItem>
-            <Eyebrow>Recrutement</Eyebrow>
+            <Eyebrow>{t.eyebrow}</Eyebrow>
           </RevealItem>
           <RevealItem>
             <h1
               id="recrutement-page-titre"
               className="mt-6 font-display text-[clamp(2.5rem,1.3rem+4.2vw,5.25rem)] leading-[1.05] tracking-[-0.015em] text-white"
             >
-              Rejoignez l’équipe <em className="text-accent italic">EVENTIA</em>
+              {t.title}
             </h1>
           </RevealItem>
           <RevealItem>
@@ -50,7 +106,7 @@ function RecrutementHero() {
           </RevealItem>
           <RevealItem className="mt-8">
             <Link href={applicationHref} appearance="primary" size="lg" icon={<ArrowRight />} className="w-full sm:w-auto">
-              Postuler
+              {t.apply}
             </Link>
           </RevealItem>
         </RevealGroup>
@@ -59,22 +115,30 @@ function RecrutementHero() {
   );
 }
 
-function Profiles() {
+function Profiles({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { recruitment } = getContent(locale);
   return (
     <Section tone="light" aria-labelledby="profils-titre">
       <div className="site-grid gap-y-12 lg:py-6">
         <div className="col-span-full lg:col-span-5">
           <Reveal>
-            <Eyebrow>Profils recherchés</Eyebrow>
+            <Eyebrow>{t.profiles}</Eyebrow>
             <h2
               id="profils-titre"
               className="mt-6 font-display text-[clamp(2rem,1.4rem+2.2vw,3.25rem)] leading-[1.1] tracking-[-0.01em] text-fg"
             >
-              Des profils. Des personnalités. <em className="text-accent italic">Une même exigence.</em>
+              {t.profilesTitle}
             </h2>
           </Reveal>
           <Reveal variant="fade" delay={0.1} className="mt-10 max-w-sm max-lg:mx-auto lg:max-w-none">
-            <MediaSlotFrame slot="recrutement-portrait" ratio="portrait" tone="light" sizes="(min-width: 1024px) 38vw, 80vw" />
+            <MediaSlotFrame
+              slot="recrutement-portrait"
+              locale={locale}
+              ratio="portrait"
+              tone="light"
+              sizes="(min-width: 1024px) 38vw, 80vw"
+            />
           </Reveal>
         </div>
 
@@ -95,13 +159,15 @@ function Profiles() {
   );
 }
 
-function Criteria() {
+function Criteria({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { recruitment } = getContent(locale);
   return (
     <Section tone="deep" aria-labelledby="criteres-titre">
       <Reveal>
-        <Eyebrow>Recrutement</Eyebrow>
+        <Eyebrow>{t.eyebrow}</Eyebrow>
         <h2 id="criteres-titre" className="mt-5 text-h2 text-fg">
-          Critères
+          {t.criteria}
         </h2>
       </Reveal>
 
@@ -112,7 +178,7 @@ function Criteria() {
             key={criterion.value}
             className="flex min-h-36 flex-col justify-end gap-3 border-t border-line py-8 sm:pr-8 lg:min-h-44"
           >
-            {"label" in criterion && (
+            {criterion.label && (
               <span className="text-eyebrow font-medium tracking-[0.18em] text-accent uppercase">{criterion.label}</span>
             )}
             <span className="font-display text-[clamp(1.75rem,1.3rem+1.6vw,2.75rem)] leading-[1.1] text-fg">
@@ -125,27 +191,29 @@ function Criteria() {
   );
 }
 
-function HowToApply() {
+function HowToApply({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { recruitment, applicationHref } = getContent(locale);
   return (
     <Section tone="surface" aria-labelledby="postuler-titre">
       <div className="site-grid gap-y-12 lg:py-6">
         <Reveal className="col-span-full lg:col-span-6">
-          <Eyebrow>Comment postuler</Eyebrow>
+          <Eyebrow>{t.howTo}</Eyebrow>
           <h2
             id="postuler-titre"
             className="mt-6 font-display text-[clamp(2rem,1.4rem+2.2vw,3.25rem)] leading-[1.12] tracking-[-0.01em] text-fg"
           >
-            Envoyez votre candidature à{" "}
+            {t.sendTo}{" "}
             <a
               href={applicationHref}
               className="mt-3 block text-[clamp(1.25rem,0.95rem+1.1vw,2rem)] text-accent italic underline decoration-1 underline-offset-[0.2em] transition-colors [overflow-wrap:anywhere] hover:text-fg"
             >
-              {siteConfig.contact.email}
+              {siteConfig.contact.recruitmentEmail}
             </a>
           </h2>
           <div className="mt-10 flex flex-col gap-4">
             <Link href={applicationHref} appearance="primary" size="lg" icon={<ArrowRight />} className="w-full sm:w-auto sm:self-start">
-              Postuler
+              {t.apply}
             </Link>
             <p className="text-small text-fg-muted">{recruitment.note}</p>
           </div>
@@ -153,7 +221,7 @@ function HowToApply() {
 
         <div className="col-span-full lg:col-span-5 lg:col-start-8">
           <Reveal>
-            <h3 className="text-eyebrow font-medium tracking-[0.18em] text-fg-muted uppercase">Documents demandés</h3>
+            <h3 className="text-eyebrow font-medium tracking-[0.18em] text-fg-muted uppercase">{t.documents}</h3>
           </Reveal>
           <RevealGroup as="ol" stagger={0.08} className="mt-6 border-t border-line">
             {recruitment.documents.map((document, index) => (
@@ -171,8 +239,10 @@ function HowToApply() {
   );
 }
 
-function Closing() {
-  const image = slotImage("equipe-groupe");
+function Closing({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { applicationHref } = getContent(locale);
+  const image = slotImage("equipe-groupe", locale);
 
   return (
     <section
@@ -192,10 +262,10 @@ function Closing() {
             id="recrutement-fin-titre"
             className="font-display text-[clamp(2.25rem,1.3rem+3.6vw,4.75rem)] leading-[1.08] tracking-[-0.01em] text-white"
           >
-            Votre image commence par les <em className="text-accent italic">personnes qui vous représentent</em>.
+            {t.closingTitle}
           </h2>
           <Link href={applicationHref} appearance="primary" size="lg" icon={<ArrowRight />} className="w-full sm:w-auto">
-            Postuler chez EVENTIA
+            {t.closingCta}
           </Link>
         </Reveal>
       </Container>
@@ -203,14 +273,14 @@ function Closing() {
   );
 }
 
-export function RecrutementPage() {
+export function RecrutementPage({ locale }: { locale: Locale }) {
   return (
     <>
-      <RecrutementHero />
-      <Profiles />
-      <Criteria />
-      <HowToApply />
-      <Closing />
+      <RecrutementHero locale={locale} />
+      <Profiles locale={locale} />
+      <Criteria locale={locale} />
+      <HowToApply locale={locale} />
+      <Closing locale={locale} />
     </>
   );
 }

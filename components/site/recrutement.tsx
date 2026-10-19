@@ -4,10 +4,18 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Link } from "@/components/ui/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import { applicationHref, recruitment } from "@/lib/content";
+import { getContent } from "@/lib/content";
+import { localizeHref, type Locale } from "@/lib/i18n";
+
+const copy = {
+  fr: { eyebrow: "Recrutement", profiles: "Profils recherchés", apply: "Postuler", criteria: "Voir les critères" },
+  en: { eyebrow: "Careers", profiles: "Profiles we are looking for", apply: "Apply", criteria: "See the criteria" },
+} satisfies Record<Locale, Record<string, string>>;
 
 /** Homepage preview; criteria and application details live on /recrutement. */
-export function Recrutement() {
+export function Recrutement({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { recruitment, applicationHref } = getContent(locale);
   return (
     <Section id="recrutement" tone="surface" aria-labelledby="recrutement-titre">
       <div className="site-grid items-center gap-y-12 lg:py-6">
@@ -15,12 +23,18 @@ export function Recrutement() {
           variant="fade"
           className="col-span-full sm:col-span-6 sm:col-start-2 md:col-span-5 md:col-start-2 lg:col-span-5 lg:col-start-1"
         >
-          <MediaSlotFrame slot="recrutement-portrait" ratio="portrait" tone="light" sizes="(min-width: 1024px) 40vw, 80vw" />
+          <MediaSlotFrame
+            slot="recrutement-portrait"
+            locale={locale}
+            ratio="portrait"
+            tone="light"
+            sizes="(min-width: 1024px) 40vw, 80vw"
+          />
         </Reveal>
 
         <div className="col-span-full lg:col-span-6 lg:col-start-7">
           <Reveal>
-            <Eyebrow>Recrutement</Eyebrow>
+            <Eyebrow>{t.eyebrow}</Eyebrow>
             <h2
               id="recrutement-titre"
               className="mt-6 font-display text-[clamp(2.25rem,1.5rem+2.6vw,3.75rem)] leading-[1.08] tracking-[-0.01em] text-fg"
@@ -31,7 +45,7 @@ export function Recrutement() {
             <p className="mt-6 text-lead text-fg-muted">{recruitment.intro}</p>
           </Reveal>
 
-          <h3 className="sr-only">Profils recherchés</h3>
+          <h3 className="sr-only">{t.profiles}</h3>
           <RevealGroup as="ul" stagger={0.08} className="mt-10 border-t border-line">
             {recruitment.previewProfiles.map((profile, index) => (
               <RevealItem as="li" key={profile} className="group/profile flex items-baseline gap-5 border-b border-line py-4">
@@ -48,10 +62,15 @@ export function Recrutement() {
           <Reveal className="mt-10 flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <Link href={applicationHref} appearance="primary" size="lg" icon={<ArrowRight />} className="w-full sm:w-auto">
-                Postuler
+                {t.apply}
               </Link>
-              <Link href="/recrutement" appearance="secondary" size="lg" className="w-full sm:w-auto">
-                Voir les critères
+              <Link
+                href={localizeHref("/recrutement", locale)}
+                appearance="secondary"
+                size="lg"
+                className="w-full sm:w-auto"
+              >
+                {t.criteria}
               </Link>
             </div>
             <p className="text-small text-fg-muted">{recruitment.note}</p>

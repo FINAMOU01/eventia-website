@@ -6,6 +6,7 @@ import Image, { type StaticImageData } from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
+import type { Locale } from "@/lib/i18n";
 
 export type MediaSource = string | StaticImageData;
 
@@ -32,7 +33,13 @@ type LazyVideoProps = {
   posterClassName?: string;
   /** Position of the ambient play/pause button. */
   controlClassName?: string;
+  locale?: Locale;
 };
+
+const labels = {
+  fr: { pause: "Mettre la vidéo en pause", play: "Lire la vidéo", playNamed: "Lire la vidéo :" },
+  en: { pause: "Pause the video", play: "Play the video", playNamed: "Play the video:" },
+} satisfies Record<Locale, Record<string, string>>;
 
 function prefersDataSaving() {
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
@@ -63,6 +70,7 @@ export function LazyVideo({
   captions,
   posterClassName,
   controlClassName = "right-3 bottom-3",
+  locale = "fr",
 }: LazyVideoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -165,7 +173,7 @@ export function LazyVideo({
 
       {!canPlay ? null : isAmbient ? (
         <IconButton
-          label={isPlaying ? "Mettre la vidéo en pause" : "Lire la vidéo"}
+          label={isPlaying ? labels[locale].pause : labels[locale].play}
           icon={isPlaying ? <Pause /> : <Play />}
           variant="overlay"
           onClick={handleToggle}
@@ -175,7 +183,7 @@ export function LazyVideo({
         !shouldLoad && (
           <div className="absolute inset-0 z-10 grid place-items-center">
             <IconButton
-              label={`Lire la vidéo : ${alt}`}
+              label={`${labels[locale].playNamed} ${alt}`}
               icon={<Play />}
               variant="overlay"
               size="lg"

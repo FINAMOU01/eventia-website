@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import type { Locale } from "@/lib/i18n";
 import type { PlaceholderMotif } from "@/lib/media";
 
 type MediaPlaceholderProps = {
@@ -8,7 +9,13 @@ type MediaPlaceholderProps = {
   tone?: "deep" | "light";
   /** Hides the file hint on small frames. */
   compact?: boolean;
+  locale: Locale;
 };
+
+const labels = {
+  fr: { aria: "Média à remplacer :", long: "Média à remplacer", short: "À remplacer" },
+  en: { aria: "Media to be replaced:", long: "Media to be replaced", short: "To be replaced" },
+} satisfies Record<Locale, Record<string, string>>;
 
 const toneClasses = {
   deep: {
@@ -92,13 +99,13 @@ function Motif({ motif, tone }: { motif: PlaceholderMotif; tone: keyof typeof to
 }
 
 // Premium stand-in until real EVENTIA media is delivered; always labelled as such.
-export function MediaPlaceholder({ label, files, motif, tone = "deep", compact = false }: MediaPlaceholderProps) {
+export function MediaPlaceholder({ label, files, motif, tone = "deep", compact = false, locale }: MediaPlaceholderProps) {
   const t = toneClasses[tone];
 
   return (
     <div
       role="img"
-      aria-label={`Média à remplacer : ${label}`}
+      aria-label={`${labels[locale].aria} ${label}`}
       className={cn("absolute inset-0 overflow-hidden", t.base)}
     >
       <div
@@ -131,7 +138,7 @@ export function MediaPlaceholder({ label, files, motif, tone = "deep", compact =
               t.line,
             )}
           >
-            {compact ? "À remplacer" : "Média à remplacer"}
+            {compact ? labels[locale].short : labels[locale].long}
           </p>
         </div>
         <div className="flex flex-col gap-1">

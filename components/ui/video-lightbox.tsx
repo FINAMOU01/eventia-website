@@ -4,6 +4,7 @@ import { Play, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/cn";
+import type { Locale } from "@/lib/i18n";
 
 export type LightboxVideo = {
   title: string;
@@ -21,10 +22,16 @@ type VideoLightboxProps = {
   /** Visual shown inside the trigger button (poster, artwork…). */
   children: ReactNode;
   className?: string;
+  locale?: Locale;
 };
 
+const labels = {
+  fr: { play: "Lire la vidéo :", close: "Fermer la vidéo" },
+  en: { play: "Play the video:", close: "Close the video" },
+} satisfies Record<Locale, Record<string, string>>;
+
 /** A poster button that opens the video in a modal dialog (Escape, backdrop click and close button dismiss it). */
-export function VideoLightbox({ video, children, className }: VideoLightboxProps) {
+export function VideoLightbox({ video, children, className, locale = "fr" }: VideoLightboxProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -52,7 +59,7 @@ export function VideoLightbox({ video, children, className }: VideoLightboxProps
       <button
         type="button"
         aria-haspopup="dialog"
-        aria-label={`Lire la vidéo : ${video.title}`}
+        aria-label={`${labels[locale].play} ${video.title}`}
         onClick={() => setIsOpen(true)}
         className={cn("group/video relative block w-full overflow-hidden text-left", className)}
       >
@@ -86,7 +93,7 @@ export function VideoLightbox({ video, children, className }: VideoLightboxProps
         {isOpen && (
           <>
             <IconButton
-              label="Fermer la vidéo"
+              label={labels[locale].close}
               icon={<X />}
               variant="overlay"
               onClick={() => setIsOpen(false)}

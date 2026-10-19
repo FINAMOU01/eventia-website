@@ -1,5 +1,6 @@
 import type { FrameMedia } from "@/components/ui/media-frame";
 import type { VideoSource } from "@/components/ui/lazy-video";
+import type { Locale } from "@/lib/i18n";
 
 export type PlaceholderMotif = "arch" | "spotlight" | "portrait";
 
@@ -17,8 +18,11 @@ export const heroVideo = {
   // H.264 1080p 30 fps, no audio, faststart.
   sources: [{ src: "/media/hero/hero.mp4", type: "video/mp4" }],
   poster: "/media/hero/hero.jpg",
-  alt: "Hôtesses EVENTIA en uniforme bleu lors d’un événement",
-} satisfies { sources: VideoSource[]; poster: string; alt: string };
+  alt: {
+    fr: "Hôtesses EVENTIA en uniforme bleu lors d’un événement",
+    en: "EVENTIA hostesses in blue uniforms at an event",
+  },
+} satisfies { sources: VideoSource[]; poster: string; alt: Record<Locale, string> };
 
 function expertiseImage(label: string, file: string, alt: string): MediaSlot {
   const src = `/media/expertise/${file}`;
@@ -188,11 +192,75 @@ export const mediaSlots = {
 
 export type MediaSlotId = keyof typeof mediaSlots;
 
+// English label/alt per slot; the French text above stays the reference.
+const mediaTextEn: Record<MediaSlotId, { label: string; alt?: string }> = {
+  "expertise-accueil": {
+    label: "Reception & representation",
+    alt: "EVENTIA hostess in a blue dress welcoming a guest at the entrance of a reception",
+  },
+  "expertise-protocole": {
+    label: "Protocol & guest assistance",
+    alt: "EVENTIA hostess accompanying a guest through a reception hall",
+  },
+  "expertise-organisation": {
+    label: "Event organisation",
+    alt: "EVENTIA hostesses checking the set-up of a reception hall before the guests arrive",
+  },
+  "expertise-activation": {
+    label: "Product & brand activation",
+    alt: "EVENTIA hostesses presenting beauty products to visitors at a stand",
+  },
+  "expertise-personnel": { label: "Tailored event staff", alt: "EVENTIA event staff at an event" },
+  "expertise-wedding": { label: "Wedding Planning", alt: "EVENTIA Wedding Planning illustration" },
+  "expertise-decoration": { label: "Event decoration", alt: "EVENTIA event decoration illustration" },
+  "expertise-restauration": { label: "Event catering", alt: "EVENTIA event catering illustration" },
+  "expertise-image": { label: "Image management", alt: "EVENTIA image management illustration" },
+  "realisation-littoral-main": { label: "Littoral & South-West 2026" },
+  "realisation-littoral-detail": { label: "Littoral & South-West 2026 — detail" },
+  "realisation-miss-main": {
+    label: "Miss Cameroun 2026",
+    alt: "EVENTIA hostesses in blue uniforms presenting the winners’ sashes on the Miss Cameroun stage",
+  },
+  "realisation-miss-side": {
+    label: "Miss Cameroun 2026 — photo",
+    alt: "Sash ceremony on the stage of the Miss Cameroun final, with an EVENTIA hostess in a blue dress",
+  },
+  "realisation-miss-detail": {
+    label: "Miss Cameroun 2026 — detail",
+    alt: "EVENTIA hostesses handing gift bags to the contestants on stage at Miss Cameroun",
+  },
+  "realisation-miss-extra": {
+    label: "Miss Cameroun 2026 — photo",
+    alt: "Team of EVENTIA hostesses in long blue dresses posing in front of the Miss Cameroun 2026 press wall",
+  },
+  "realisation-comica": {
+    label: "COMICA partnership",
+    alt: "Poster: COMICA and Eventia announce their partnership for Miss Cameroun 2026 — event hostesses and VVIP guest reception, national final on 19 September 2026",
+  },
+  "equipe-noura": {
+    label: "Portrait — Noura Njikam",
+    alt: "Portrait of Noura Njikam, CEO of EVENTIA BY N.J, in a blue suit",
+  },
+  "equipe-groupe": {
+    label: "The EVENTIA team",
+    alt: "Noura Njikam, Miss World Cameroun 2026, surrounded by EVENTIA hostesses in blue uniforms",
+  },
+  "equipe-terrain": {
+    label: "The EVENTIA team on site",
+    alt: "EVENTIA hostesses in blue uniforms posing around an Eventia roll-up banner",
+  },
+  "recrutement-portrait": { label: "Careers", alt: "Smiling EVENTIA hostess in a blue uniform and white scarf" },
+  "recrutement-equipe": {
+    label: "The EVENTIA hostesses",
+    alt: "EVENTIA hostesses in royal blue satin dresses in front of the Eventia wall",
+  },
+};
+
 export type ShowcasePhoto = {
   /** `id` of the matching entry in `realisations` (lib/content.ts); its type and title caption the slide. */
   realisationId: string;
   src: string;
-  alt: string;
+  alt: Record<Locale, string>;
 };
 
 /** Homepage Réalisations carousel, in display order. Add an item to add a slide (real event photos only). */
@@ -200,25 +268,41 @@ export const realisationsShowcase: ShowcasePhoto[] = [
   {
     realisationId: "miss-cameroun-2026",
     src: "/media/realisations/miss-cameroun-2026/mis cameroun4.PNG",
-    alt: "Les hôtesses EVENTIA en robes de satin bleu roi devant le mur Eventia lors de Miss Cameroun 2026",
+    alt: {
+      fr: "Les hôtesses EVENTIA en robes de satin bleu roi devant le mur Eventia lors de Miss Cameroun 2026",
+      en: "EVENTIA hostesses in royal blue satin dresses in front of the Eventia wall at Miss Cameroun 2026",
+    },
   },
   {
     realisationId: "miss-cameroun-2026",
     src: "/media/realisations/miss-cameroun-2026/misscameroun1.jpg",
-    alt: "Hôtesses EVENTIA en uniforme bleu présentant les écharpes des lauréates sur la scène de Miss Cameroun",
+    alt: {
+      fr: "Hôtesses EVENTIA en uniforme bleu présentant les écharpes des lauréates sur la scène de Miss Cameroun",
+      en: "EVENTIA hostesses in blue uniforms presenting the winners’ sashes on the Miss Cameroun stage",
+    },
   },
   {
     realisationId: "miss-cameroun-2026",
     src: "/media/realisations/miss-cameroun-2026/miss cameroun3.png",
-    alt: "Remise des écharpes sur la scène de la finale Miss Cameroun, avec une hôtesse EVENTIA en robe bleue",
+    alt: {
+      fr: "Remise des écharpes sur la scène de la finale Miss Cameroun, avec une hôtesse EVENTIA en robe bleue",
+      en: "Sash ceremony on the stage of the Miss Cameroun final, with an EVENTIA hostess in a blue dress",
+    },
   },
   {
     realisationId: "miss-cameroun-2026",
     src: "/media/realisations/miss-cameroun-2026/miss cameroun2.jpg",
-    alt: "Hôtesses EVENTIA remettant les sacs cadeaux aux candidates sur scène lors de Miss Cameroun",
+    alt: {
+      fr: "Hôtesses EVENTIA remettant les sacs cadeaux aux candidates sur scène lors de Miss Cameroun",
+      en: "EVENTIA hostesses handing gift bags to the contestants on stage at Miss Cameroun",
+    },
   },
 ];
 
-export function getMediaSlot(id: MediaSlotId): MediaSlot {
-  return mediaSlots[id];
+export function getMediaSlot(id: MediaSlotId, locale: Locale): MediaSlot {
+  const slot: MediaSlot = mediaSlots[id];
+  if (locale === "fr") return slot;
+  const { label, alt } = mediaTextEn[id];
+  const media = slot.media && alt && slot.media.kind !== "embed" ? { ...slot.media, alt } : slot.media;
+  return { ...slot, label, media };
 }

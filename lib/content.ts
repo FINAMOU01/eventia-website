@@ -1,6 +1,8 @@
 import type { LightboxVideo } from "@/components/ui/video-lightbox";
+import { contentEn } from "@/lib/content-en";
+import type { Locale } from "@/lib/i18n";
 import type { MediaSlotId } from "@/lib/media";
-import { siteConfig } from "@/lib/site";
+import { mailtoHref, siteConfig } from "@/lib/site";
 
 // Expertise titles/descriptions and method steps are the client's exact wording.
 
@@ -8,17 +10,20 @@ export type Expertise = {
   id: string;
   number: string;
   title: string;
+  /** Short line used by the homepage preview. */
+  tagline: string;
   description: string;
   /** "coeur": historical core offer (01–05); "elargie": offer extensions (06–09). */
   group: "coeur" | "elargie";
   slot: MediaSlotId;
 };
 
-export const expertises: Expertise[] = [
+const expertises: Expertise[] = [
   {
     id: "accueil-representation",
     number: "01",
     title: "Accueil & représentation",
+    tagline: "Créer un premier contact qui valorise votre image.",
     description: "Premier contact, première impression\u00a0: valoriser votre image auprès de vos publics.",
     group: "coeur",
     slot: "expertise-accueil",
@@ -27,6 +32,7 @@ export const expertises: Expertise[] = [
     id: "protocole-accompagnement",
     number: "02",
     title: "Protocole & accompagnement",
+    tagline: "Accueillir et accompagner vos invités avec attention.",
     description: "Accueillir et accompagner vos invités avec attention et professionnalisme.",
     group: "coeur",
     slot: "expertise-protocole",
@@ -35,6 +41,7 @@ export const expertises: Expertise[] = [
     id: "organisation-evenementielle",
     number: "03",
     title: "Organisation événementielle",
+    tagline: "Concevoir et coordonner vos événements avec précision.",
     description: "Des équipes mobilisées pour contribuer au bon déroulement de vos événements.",
     group: "coeur",
     slot: "expertise-organisation",
@@ -43,6 +50,7 @@ export const expertises: Expertise[] = [
     id: "activation-produits-marques",
     number: "04",
     title: "Activation de produits & de marques",
+    tagline: "Créer l’interaction entre votre marque et votre public.",
     description: "Créer une interaction forte entre votre marque, vos produits et votre public.",
     group: "coeur",
     slot: "expertise-activation",
@@ -51,6 +59,7 @@ export const expertises: Expertise[] = [
     id: "personnel-sur-mesure",
     number: "05",
     title: "Personnel événementiel sur mesure",
+    tagline: "Des équipes adaptées aux besoins de chaque événement.",
     description: "Des équipes adaptées à vos besoins, à votre événement et à votre image.",
     group: "coeur",
     slot: "expertise-personnel",
@@ -59,6 +68,7 @@ export const expertises: Expertise[] = [
     id: "wedding-planning",
     number: "06",
     title: "Wedding Planning",
+    tagline: "Imaginer et orchestrer des célébrations qui vous ressemblent.",
     description: "Imaginer et orchestrer des célébrations qui vous ressemblent.",
     group: "elargie",
     slot: "expertise-wedding",
@@ -67,6 +77,7 @@ export const expertises: Expertise[] = [
     id: "decoration-evenementielle",
     number: "07",
     title: "Décoration événementielle",
+    tagline: "Créer des univers élégants, cohérents et mémorables.",
     description: "Créer des univers élégants, cohérents et mémorables.",
     group: "elargie",
     slot: "expertise-decoration",
@@ -75,6 +86,7 @@ export const expertises: Expertise[] = [
     id: "restauration-evenementielle",
     number: "08",
     title: "Restauration événementielle",
+    tagline: "Proposer une expérience culinaire adaptée à chaque occasion.",
     description: "Proposer une expérience culinaire adaptée à chaque occasion.",
     group: "elargie",
     slot: "expertise-restauration",
@@ -83,26 +95,31 @@ export const expertises: Expertise[] = [
     id: "gestion-image",
     number: "09",
     title: "Gestion d’image",
+    tagline: "Soigner votre présence, votre image et celle de votre événement.",
     description: "Soigner votre présence, votre image et celle de votre événement.",
     group: "elargie",
     slot: "expertise-image",
   },
 ];
 
-export const method = [
+export type MethodStep = { verb: string; text: string };
+
+const method: MethodStep[] = [
   { verb: "Comprendre", text: "Identifier les besoins de votre événement." },
   { verb: "Constituer", text: "Constituer une équipe adaptée à la mission." },
   { verb: "Préparer", text: "Briefing et préparation des équipes." },
   { verb: "Accompagner", text: "Être présent sur le terrain et contribuer à la qualité de l’expérience." },
-] as const;
+];
 
-export const realisationsIntro = {
+export type RealisationsIntro = { title: string; intro: string; category: string; context: string };
+
+const realisationsIntro: RealisationsIntro = {
   title: "Des événements. Des visages. Des expériences.",
   intro: "EVENTIA en action à travers des événements qui nous ont fait confiance.",
   category: "Événements premium",
   context:
     "Partenaire du COMICA, EVENTIA a accompagné ces étapes avec ses équipes, contribuant à l’accueil, à l’accompagnement et à l’image de l’événement.",
-} as const;
+};
 
 export type Realisation = {
   id: string;
@@ -114,7 +131,7 @@ export type Realisation = {
   slots: [MediaSlotId, MediaSlotId, MediaSlotId?, MediaSlotId?];
 };
 
-export const realisations: Realisation[] = [
+const realisations: Realisation[] = [
   {
     id: "littoral-sud-ouest-2026",
     number: "01",
@@ -131,17 +148,27 @@ export const realisations: Realisation[] = [
   },
 ];
 
-export const eventiaSpot: LightboxVideo = {
+const eventiaSpot: LightboxVideo = {
   kind: "file",
   src: "/media/hero/hero.mp4",
   orientation: "landscape",
   title: "Le spot EVENTIA",
 };
 
-export const teamValues = ["Élégance", "Professionnalisme", "Dynamisme", "Engagement"] as const;
+const teamValues = ["Élégance", "Professionnalisme", "Dynamisme", "Engagement"];
+
+export type Team = {
+  headline: [string, string, string];
+  summary: string;
+  quote: string;
+  leader: { name: string; role: string; titles: string };
+  agency: string;
+  ambition: string;
+  crew: string;
+};
 
 // Client-approved wording only.
-export const team = {
+const team: Team = {
   headline: ["Une vision.", "Une équipe.", "Une ambition."],
   summary:
     "EVENTIA réunit des équipes préparées, briefées et engagées autour d’une même exigence : faire de chaque événement une expérience professionnelle, élégante et mémorable.",
@@ -155,10 +182,23 @@ export const team = {
     "EVENTIA est une agence spécialisée dans l’accueil, la représentation, l’animation et l’accompagnement événementiel. Elle met à disposition des équipes préparées, dynamiques et engagées pour accompagner entreprises, institutions et organisateurs.",
   ambition: "Faire de chaque rencontre avec votre public une expérience qui vous ressemble.",
   crew: "Autour de Noura Njikam, une équipe préparée, briefée et engagée, présente sur le terrain pour représenter votre image.",
-} as const;
+};
+
+export type Recruitment = {
+  title: string;
+  tagline: string;
+  intro: string;
+  pageIntro: string;
+  note: string;
+  closing: string;
+  previewProfiles: string[];
+  profiles: string[];
+  criteria: { label?: string; value: string }[];
+  documents: string[];
+};
 
 // Client-approved wording only; do not add criteria the client has not provided.
-export const recruitment = {
+const recruitment: Recruitment = {
   title: "Rejoignez l’équipe EVENTIA",
   tagline: "Des profils. Des personnalités. Une même exigence.",
   intro:
@@ -190,12 +230,39 @@ export const recruitment = {
     { value: "Bon relationnel" },
   ],
   documents: ["CV", "Lettre de motivation", "Photo portrait récente", "Photo récente en pied, sans filtre"],
-} as const;
+};
 
-export const applicationHref = `mailto:${siteConfig.contact.email}?subject=${encodeURIComponent(
-  "Candidature — EVENTIA",
-)}&body=${encodeURIComponent(
-  `Bonjour,\n\nJe souhaite rejoindre l’équipe EVENTIA. Vous trouverez ci-joint :\n${recruitment.documents
-    .map((document) => `- ${document}`)
-    .join("\n")}\n\nCordialement,\n`,
-)}`;
+export type Content = {
+  expertises: Expertise[];
+  method: MethodStep[];
+  realisationsIntro: RealisationsIntro;
+  realisations: Realisation[];
+  eventiaSpot: LightboxVideo;
+  teamValues: string[];
+  team: Team;
+  recruitment: Recruitment;
+  /** Pre-filled application e-mail listing the requested documents. */
+  applicationHref: string;
+};
+
+const contentFr: Content = {
+  expertises,
+  method,
+  realisationsIntro,
+  realisations,
+  eventiaSpot,
+  teamValues,
+  team,
+  recruitment,
+  applicationHref: mailtoHref(
+    "Candidature — EVENTIA",
+    `Bonjour,\n\nJe souhaite rejoindre l’équipe EVENTIA. Vous trouverez ci-joint :\n${recruitment.documents
+      .map((document) => `- ${document}`)
+      .join("\n")}\n\nCordialement,\n`,
+    siteConfig.contact.recruitmentEmail,
+  ),
+};
+
+export function getContent(locale: Locale): Content {
+  return locale === "en" ? contentEn : contentFr;
+}

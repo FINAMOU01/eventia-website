@@ -7,25 +7,39 @@ import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/container";
 import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/cn";
-import { realisations, realisationsIntro } from "@/lib/content";
+import { getContent } from "@/lib/content";
+import { localizeHref, type Locale } from "@/lib/i18n";
 import { realisationsShowcase } from "@/lib/media";
 
 const INTERVAL_MS = 4000;
 
-const slides = realisationsShowcase.flatMap((photo) => {
-  const realisation = realisations.find(({ id }) => id === photo.realisationId);
-  return realisation ? [{ ...photo, realisation }] : [];
-});
+function buildSlides(locale: Locale) {
+  const { realisations } = getContent(locale);
+  return realisationsShowcase.flatMap((photo) => {
+    const realisation = realisations.find(({ id }) => id === photo.realisationId);
+    return realisation ? [{ src: photo.src, alt: photo.alt[locale], realisation }] : [];
+  });
+}
+const slidesByLocale = { fr: buildSlides("fr"), en: buildSlides("en") } satisfies Record<Locale, unknown>;
+const count = slidesByLocale.fr.length;
+
+const copy = {
+  fr: { eyebrow: "Nos réalisations", roledescription: "carrousel", cta: "Voir nos réalisations" },
+  en: { eyebrow: "Our work", roledescription: "carousel", cta: "See our work" },
+} satisfies Record<Locale, Record<string, string>>;
 
 /** Homepage preview: full-bleed photo carousel; the full portfolio lives on /realisations. */
-export function Realisations() {
+export function Realisations({ locale }: { locale: Locale }) {
+  const slides = slidesByLocale[locale];
+  const t = copy[locale];
+  const { realisationsIntro } = getContent(locale);
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
   const [hasFocus, setHasFocus] = useState(false);
   const [inView, setInView] = useState(false);
 
-  const canRotate = slides.length > 1 && !reduceMotion;
+  const canRotate = count > 1 && !reduceMotion;
   // Keeps rotating under the mouse; only keyboard focus inside the section or leaving the viewport pauses it.
   const isPlaying = canRotate && !hasFocus && inView;
   const current = slides[active];
@@ -40,7 +54,7 @@ export function Realisations() {
 
   useEffect(() => {
     if (!isPlaying) return;
-    const timer = window.setTimeout(() => setActive((index) => (index + 1) % slides.length), INTERVAL_MS);
+    const timer = window.setTimeout(() => setActive((index) => (index + 1) % count), INTERVAL_MS);
     return () => window.clearTimeout(timer);
   }, [isPlaying, active]);
 
@@ -49,7 +63,7 @@ export function Realisations() {
       ref={sectionRef}
       id="realisations"
       aria-labelledby="realisations-titre"
-      aria-roledescription="carrousel"
+      aria-roledescription={t.roledescription}
       onFocus={() => setHasFocus(true)}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setHasFocus(false);
@@ -98,7 +112,7 @@ export function Realisations() {
             className="inline-flex items-center gap-3 font-sans text-eyebrow font-medium text-accent uppercase"
           >
             <span aria-hidden="true" className="h-px w-8 bg-current" />
-            Nos réalisations
+            {t.eyebrow}
           </h2>
 
           <div aria-live={isPlaying ? "off" : "polite"} className="mt-6 min-h-[8.5rem] sm:min-h-[9.5rem] lg:min-h-[11rem]">
@@ -127,13 +141,13 @@ export function Realisations() {
           <p className="mt-3 max-w-xl text-small text-white/65">{realisationsIntro.context}</p>
 
           <Link
-            href="/realisations"
+            href={localizeHref("/realisations", locale)}
             appearance="primary"
             size="lg"
             icon={<ArrowRight />}
             className="mt-8 w-full sm:w-auto"
           >
-            Voir nos réalisations
+            {t.cta}
           </Link>
         </div>
       </Container>

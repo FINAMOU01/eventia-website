@@ -1,15 +1,86 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { MediaSlotFrame } from "@/components/site/media-slot-frame";
+import { TeamQuote } from "@/components/site/equipe";
 import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Link } from "@/components/ui/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import { team, teamValues } from "@/lib/content";
-import { siteConfig } from "@/lib/site";
+import { getContent } from "@/lib/content";
+import { localizeHref, quoteMarks, type Locale } from "@/lib/i18n";
+import { getSiteText, siteConfig } from "@/lib/site";
 
-function EquipeHero() {
+const copy = {
+  fr: {
+    heroAlt: "Noura Njikam, Miss World Cameroun 2026, entourée des hôtesses EVENTIA en uniforme bleu",
+    eyebrow: "L’équipe",
+    vision: "La vision",
+    visionTitle: (name: string) => (
+      <>
+        Une vision portée par Madame <em className="text-accent italic">{name}</em>
+      </>
+    ),
+    quoteLabel: "Citation de Noura Njikam",
+    ourTeam: "Notre équipe",
+    ourTeamTitle: (
+      <>
+        Préparée. Briefée. <em className="text-accent italic">Engagée.</em>
+      </>
+    ),
+    mission:
+      "Pour chaque mission, EVENTIA constitue une équipe adaptée, briefée et préparée selon les exigences de votre événement.",
+    values: "Nos valeurs",
+    onSite: "Sur le terrain",
+    onSiteTitle: (
+      <>
+        Présente sur le terrain pour <em className="text-accent italic">représenter votre image</em>.
+      </>
+    ),
+    ctaEyebrow: "Vous préparez votre prochain événement ?",
+    ctaTitle: (
+      <>
+        Parlons de <em className="text-accent italic">votre projet</em>.
+      </>
+    ),
+  },
+  en: {
+    heroAlt: "Noura Njikam, Miss World Cameroun 2026, surrounded by EVENTIA hostesses in blue uniforms",
+    eyebrow: "The team",
+    vision: "The vision",
+    visionTitle: (name: string) => (
+      <>
+        A vision led by <em className="text-accent italic">{name}</em>
+      </>
+    ),
+    quoteLabel: "Quote from Noura Njikam",
+    ourTeam: "Our team",
+    ourTeamTitle: (
+      <>
+        Prepared. Briefed. <em className="text-accent italic">Committed.</em>
+      </>
+    ),
+    mission:
+      "For every assignment, EVENTIA builds a suitable team, briefed and prepared according to the requirements of your event.",
+    values: "Our values",
+    onSite: "On site",
+    onSiteTitle: (
+      <>
+        On site to <em className="text-accent italic">represent your image</em>.
+      </>
+    ),
+    ctaEyebrow: "Preparing your next event?",
+    ctaTitle: (
+      <>
+        Let’s talk about <em className="text-accent italic">your project</em>.
+      </>
+    ),
+  },
+} satisfies Record<Locale, unknown>;
+
+function EquipeHero({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { team } = getContent(locale);
   return (
     <section
       aria-labelledby="equipe-page-titre"
@@ -24,7 +95,7 @@ function EquipeHero() {
       <div className="absolute inset-x-0 top-[calc(var(--header-height)+1.5rem)] bottom-0 -z-20">
         <Image
           src="/media/equipe/equipe2-cutout.png"
-          alt="Noura Njikam, Miss World Cameroun 2026, entourée des hôtesses EVENTIA en uniforme bleu"
+          alt={t.heroAlt}
           fill
           preload
           sizes="100vw"
@@ -45,7 +116,7 @@ function EquipeHero() {
       <Container className="flex flex-1 flex-col justify-end pt-[calc(var(--header-height)+2rem)] pb-10 lg:pb-14">
         <RevealGroup stagger={0.14} delay={0.1} className="max-w-3xl">
           <RevealItem>
-            <Eyebrow>L’équipe</Eyebrow>
+            <Eyebrow>{t.eyebrow}</Eyebrow>
           </RevealItem>
           <RevealItem>
             <h1
@@ -68,7 +139,10 @@ function EquipeHero() {
   );
 }
 
-function Vision() {
+function Vision({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { team } = getContent(locale);
+  const [open, close] = quoteMarks[locale];
   return (
     <Section tone="light" aria-labelledby="vision-titre">
       <div className="site-grid items-center gap-y-12 lg:py-8">
@@ -77,7 +151,13 @@ function Vision() {
           className="col-span-full sm:col-span-6 sm:col-start-2 md:col-span-5 md:col-start-2 lg:col-span-5 lg:col-start-1"
         >
           <figure>
-            <MediaSlotFrame slot="equipe-noura" ratio="portrait" tone="light" sizes="(min-width: 1024px) 40vw, 80vw" />
+            <MediaSlotFrame
+              slot="equipe-noura"
+              locale={locale}
+              ratio="portrait"
+              tone="light"
+              sizes="(min-width: 1024px) 40vw, 80vw"
+            />
             <figcaption className="mt-5 flex flex-col gap-1">
               <span className="font-display text-h3 text-fg">{team.leader.name}</span>
               <span className="text-eyebrow font-medium tracking-[0.18em] text-accent uppercase">{team.leader.role}</span>
@@ -87,18 +167,22 @@ function Vision() {
         </Reveal>
 
         <Reveal delay={0.1} className="col-span-full lg:col-span-6 lg:col-start-7">
-          <Eyebrow>La vision</Eyebrow>
+          <Eyebrow>{t.vision}</Eyebrow>
           <h2
             id="vision-titre"
             className="mt-6 font-display text-[clamp(2rem,1.4rem+2.4vw,3.5rem)] leading-[1.1] tracking-[-0.01em] text-fg"
           >
-            Une vision portée par Madame <em className="text-accent italic">{team.leader.name}</em>
+            {t.visionTitle(team.leader.name)}
           </h2>
           <p className="mt-8 text-lead text-fg-muted">{team.agency}</p>
 
           <div className="mt-10 border-t border-line pt-8">
             <Eyebrow>Ambition</Eyebrow>
-            <p className="mt-4 font-display text-h3 text-fg italic">«&nbsp;{team.ambition}&nbsp;»</p>
+            <p className="mt-4 font-display text-h3 text-fg italic">
+              {open}
+              {team.ambition}
+              {close}
+            </p>
           </div>
         </Reveal>
       </div>
@@ -106,14 +190,15 @@ function Vision() {
   );
 }
 
-function Quote() {
+function Quote({ locale }: { locale: Locale }) {
+  const { team } = getContent(locale);
   return (
-    <Section tone="deep" aria-label="Citation de Noura Njikam">
+    <Section tone="deep" aria-label={copy[locale].quoteLabel}>
       <Reveal className="mx-auto max-w-5xl py-6 text-center lg:py-12">
         <figure>
           <blockquote>
             <p className="font-display text-[clamp(2rem,1.2rem+3.2vw,4.25rem)] leading-[1.12] text-fg italic">
-              «&nbsp;L’accueil est le premier reflet de <span className="text-accent">votre image</span>.&nbsp;»
+              <TeamQuote locale={locale} />
             </p>
           </blockquote>
           <figcaption className="mt-8 text-eyebrow font-medium tracking-[0.18em] text-fg-muted uppercase">
@@ -125,29 +210,28 @@ function Quote() {
   );
 }
 
-function OurTeam() {
+function OurTeam({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { team, teamValues } = getContent(locale);
   return (
     <Section tone="surface" aria-labelledby="notre-equipe-titre">
       <div className="site-grid gap-y-10 lg:py-6">
         <Reveal className="col-span-full lg:col-span-5">
-          <Eyebrow>Notre équipe</Eyebrow>
+          <Eyebrow>{t.ourTeam}</Eyebrow>
           <h2
             id="notre-equipe-titre"
             className="mt-6 font-display text-[clamp(2.25rem,1.5rem+2.6vw,3.75rem)] leading-[1.08] tracking-[-0.01em] text-fg"
           >
-            Préparée. Briefée. <em className="text-accent italic">Engagée.</em>
+            {t.ourTeamTitle}
           </h2>
         </Reveal>
         <Reveal delay={0.1} className="col-span-full flex flex-col gap-6 lg:col-span-6 lg:col-start-7 lg:pt-14">
           <p className="text-lead text-fg-muted">{team.crew}</p>
-          <p className="text-body text-fg-muted">
-            Pour chaque mission, EVENTIA constitue une équipe adaptée, briefée et préparée selon les exigences de votre
-            événement.
-          </p>
+          <p className="text-body text-fg-muted">{t.mission}</p>
         </Reveal>
       </div>
 
-      <h3 className="sr-only">Nos valeurs</h3>
+      <h3 className="sr-only">{t.values}</h3>
       <RevealGroup
         as="ol"
         stagger={0.1}
@@ -172,14 +256,15 @@ function OurTeam() {
   );
 }
 
-function OnSite() {
+function OnSite({ locale }: { locale: Locale }) {
+  const t = copy[locale];
   return (
     <Section tone="light" aria-labelledby="terrain-titre">
       <div className="site-grid items-end gap-y-10">
         <Reveal className="col-span-full lg:col-span-5 lg:pb-10">
-          <Eyebrow>Sur le terrain</Eyebrow>
+          <Eyebrow>{t.onSite}</Eyebrow>
           <h2 id="terrain-titre" className="mt-6 text-h2 text-fg">
-            Présente sur le terrain pour <em className="text-accent italic">représenter votre image</em>.
+            {t.onSiteTitle}
           </h2>
         </Reveal>
         <Reveal
@@ -187,38 +272,50 @@ function OnSite() {
           delay={0.1}
           className="col-span-full sm:col-span-6 sm:col-start-2 md:col-span-5 md:col-start-3 lg:col-span-5 lg:col-start-7"
         >
-          <MediaSlotFrame slot="equipe-terrain" ratio="portrait" tone="light" sizes="(min-width: 1024px) 40vw, 80vw" />
+          <MediaSlotFrame
+            slot="equipe-terrain"
+            locale={locale}
+            ratio="portrait"
+            tone="light"
+            sizes="(min-width: 1024px) 40vw, 80vw"
+          />
         </Reveal>
       </div>
     </Section>
   );
 }
 
-function EquipeCta() {
+function EquipeCta({ locale }: { locale: Locale }) {
+  const t = copy[locale];
   return (
     <Section tone="surface" aria-labelledby="equipe-cta-titre">
       <Reveal className="mx-auto flex max-w-3xl flex-col items-center gap-7 py-6 text-center lg:py-10">
-        <Eyebrow>Vous préparez votre prochain événement&nbsp;?</Eyebrow>
+        <Eyebrow>{t.ctaEyebrow}</Eyebrow>
         <h2 id="equipe-cta-titre" className="text-display text-fg">
-          Parlons de <em className="text-accent italic">votre projet</em>.
+          {t.ctaTitle}
         </h2>
-        <Link href={siteConfig.primaryCta.href} appearance="primary" size="lg" icon={<ArrowRight />}>
-          {siteConfig.primaryCta.label}
+        <Link
+          href={localizeHref(siteConfig.primaryCtaHref, locale)}
+          appearance="primary"
+          size="lg"
+          icon={<ArrowRight />}
+        >
+          {getSiteText(locale).primaryCta}
         </Link>
       </Reveal>
     </Section>
   );
 }
 
-export function EquipePage() {
+export function EquipePage({ locale }: { locale: Locale }) {
   return (
     <>
-      <EquipeHero />
-      <Vision />
-      <Quote />
-      <OurTeam />
-      <OnSite />
-      <EquipeCta />
+      <EquipeHero locale={locale} />
+      <Vision locale={locale} />
+      <Quote locale={locale} />
+      <OurTeam locale={locale} />
+      <OnSite locale={locale} />
+      <EquipeCta locale={locale} />
     </>
   );
 }

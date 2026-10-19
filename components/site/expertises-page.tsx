@@ -5,10 +5,62 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Link } from "@/components/ui/link";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import { expertises, method, type Expertise } from "@/lib/content";
-import { siteConfig } from "@/lib/site";
+import { getContent, type Expertise } from "@/lib/content";
+import { localizeHref, type Locale } from "@/lib/i18n";
+import { getSiteText, siteConfig } from "@/lib/site";
 
-function ExpertisesHero() {
+const copy = {
+  fr: {
+    eyebrow: "Nos expertises",
+    title: (
+      <>
+        Des équipes adaptées <br className="hidden sm:block" />à <em className="text-accent italic">chaque événement</em>.
+      </>
+    ),
+    lead: "EVENTIA met à votre disposition des équipes formées, préparées et professionnelles, adaptées à chaque type d’événement et d’expérience de marque.",
+    groups: { coeur: "Cœur de métier", elargie: "Offre élargie" },
+    list: "Nos neuf expertises",
+    method: "Notre méthode",
+    methodTitle: (
+      <>
+        Comprendre, constituer, préparer, <em className="text-accent italic">accompagner</em>.
+      </>
+    ),
+    ctaEyebrow: "Vous avez un événement à préparer ?",
+    ctaTitle: (
+      <>
+        Parlons de <em className="text-accent italic">votre projet</em>.
+      </>
+    ),
+  },
+  en: {
+    eyebrow: "Our expertise",
+    title: (
+      <>
+        Teams adapted <br className="hidden sm:block" />
+        to <em className="text-accent italic">every event</em>.
+      </>
+    ),
+    lead: "EVENTIA provides trained, prepared and professional teams, adapted to every type of event and brand experience.",
+    groups: { coeur: "Core business", elargie: "Extended offer" },
+    list: "Our nine areas of expertise",
+    method: "Our method",
+    methodTitle: (
+      <>
+        Understand, assemble, prepare, <em className="text-accent italic">support</em>.
+      </>
+    ),
+    ctaEyebrow: "Do you have an event to prepare?",
+    ctaTitle: (
+      <>
+        Let’s talk about <em className="text-accent italic">your project</em>.
+      </>
+    ),
+  },
+} satisfies Record<Locale, unknown>;
+
+function ExpertisesHero({ locale }: { locale: Locale }) {
+  const t = copy[locale];
   return (
     <section
       aria-labelledby="expertises-titre"
@@ -22,26 +74,22 @@ function ExpertisesHero() {
         aria-hidden="true"
         className="pointer-events-none absolute -right-[0.06em] bottom-[-0.2em] -z-10 font-display text-[clamp(8rem,4rem+16vw,22rem)] leading-none text-white/[0.035] italic select-none"
       >
-        Expertises
+        {locale === "fr" ? "Expertises" : "Expertise"}
       </span>
 
       <Container className="pt-[calc(var(--header-height)+2.5rem)] pb-section lg:pt-[calc(var(--header-height)+3.5rem)]">
         <RevealGroup stagger={0.14} delay={0.1} className="site-grid items-end gap-y-8">
           <RevealItem className="col-span-full lg:col-span-8">
-            <Eyebrow>Nos expertises</Eyebrow>
+            <Eyebrow>{t.eyebrow}</Eyebrow>
             <h1
               id="expertises-titre"
               className="mt-6 font-display text-[clamp(2.5rem,1.3rem+4.2vw,5.25rem)] leading-[1.05] tracking-[-0.015em] text-fg"
             >
-              Des équipes adaptées <br className="hidden sm:block" />à{" "}
-              <em className="text-accent italic">chaque événement</em>.
+              {t.title}
             </h1>
           </RevealItem>
           <RevealItem className="col-span-full lg:col-span-4 lg:pb-3">
-            <p className="max-w-md border-l border-accent/60 pl-5 text-lead text-fg-muted">
-              EVENTIA met à votre disposition des équipes formées, préparées et professionnelles, adaptées à chaque
-              type d’événement et d’expérience de marque.
-            </p>
+            <p className="max-w-md border-l border-accent/60 pl-5 text-lead text-fg-muted">{t.lead}</p>
           </RevealItem>
         </RevealGroup>
       </Container>
@@ -50,11 +98,11 @@ function ExpertisesHero() {
 }
 
 const expertiseGroups = [
-  { id: "coeur", label: "Cœur de métier", range: "01 — 05" },
-  { id: "elargie", label: "Offre élargie", range: "06 — 09" },
+  { id: "coeur", range: "01 — 05" },
+  { id: "elargie", range: "06 — 09" },
 ] as const;
 
-function ExpertiseRow({ item }: { item: Expertise }) {
+function ExpertiseRow({ item, locale }: { item: Expertise; locale: Locale }) {
   return (
     <li id={item.id} className="group/expertise relative border-b border-line last:border-b-0">
       <Reveal className="grid gap-6 py-10 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-10 lg:py-12 xl:grid-cols-[auto_minmax(0,1fr)_minmax(0,40%)] xl:items-center">
@@ -72,6 +120,7 @@ function ExpertiseRow({ item }: { item: Expertise }) {
         </div>
         <MediaSlotFrame
           slot={item.slot}
+          locale={locale}
           ratio="landscape"
           tone="light"
           className="sm:col-start-2 xl:col-start-3"
@@ -86,7 +135,7 @@ function ExpertiseRow({ item }: { item: Expertise }) {
   );
 }
 
-function ExpertiseGroup({ group }: { group: (typeof expertiseGroups)[number] }) {
+function ExpertiseGroup({ group, locale }: { group: (typeof expertiseGroups)[number]; locale: Locale }) {
   const titleId = `expertises-${group.id}-titre`;
   return (
     <section aria-labelledby={titleId} className="site-grid gap-y-4 border-t border-line py-section first:border-t-0">
@@ -94,29 +143,31 @@ function ExpertiseGroup({ group }: { group: (typeof expertiseGroups)[number] }) 
         <Reveal className="lg:sticky lg:top-[calc(var(--header-height)+2.5rem)]">
           <Eyebrow>{group.range}</Eyebrow>
           <h2 id={titleId} className="mt-5 font-display text-h3 text-fg">
-            {group.label}
+            {copy[locale].groups[group.id]}
           </h2>
         </Reveal>
       </div>
       <ol className="col-span-full lg:col-span-8">
-        {expertises
-          .filter((item) => item.group === group.id)
+        {getContent(locale)
+          .expertises.filter((item) => item.group === group.id)
           .map((item) => (
-            <ExpertiseRow key={item.id} item={item} />
+            <ExpertiseRow key={item.id} item={item} locale={locale} />
           ))}
       </ol>
     </section>
   );
 }
 
-function Method() {
+function Method({ locale }: { locale: Locale }) {
+  const t = copy[locale];
+  const { method } = getContent(locale);
   return (
     <Section tone="deep" aria-labelledby="methode-titre">
       <div className="site-grid gap-y-8">
         <Reveal className="col-span-full lg:col-span-7">
-          <Eyebrow>Notre méthode</Eyebrow>
+          <Eyebrow>{t.method}</Eyebrow>
           <h2 id="methode-titre" className="mt-5 text-h2 text-fg">
-            Comprendre, constituer, préparer, <em className="text-accent italic">accompagner</em>.
+            {t.methodTitle}
           </h2>
         </Reveal>
       </div>
@@ -149,35 +200,41 @@ function Method() {
   );
 }
 
-function ExpertisesCta() {
+function ExpertisesCta({ locale }: { locale: Locale }) {
+  const t = copy[locale];
   return (
     <Section tone="surface" aria-labelledby="expertises-cta-titre">
       <Reveal className="mx-auto flex max-w-3xl flex-col items-center gap-7 py-6 text-center lg:py-10">
-        <Eyebrow>Vous avez un événement à préparer&nbsp;?</Eyebrow>
+        <Eyebrow>{t.ctaEyebrow}</Eyebrow>
         <h2 id="expertises-cta-titre" className="text-display text-fg">
-          Parlons de <em className="text-accent italic">votre projet</em>.
+          {t.ctaTitle}
         </h2>
-        <Link href={siteConfig.primaryCta.href} appearance="primary" size="lg" icon={<ArrowRight />}>
-          {siteConfig.primaryCta.label}
+        <Link
+          href={localizeHref(siteConfig.primaryCtaHref, locale)}
+          appearance="primary"
+          size="lg"
+          icon={<ArrowRight />}
+        >
+          {getSiteText(locale).primaryCta}
         </Link>
       </Reveal>
     </Section>
   );
 }
 
-export function ExpertisesPage() {
+export function ExpertisesPage({ locale }: { locale: Locale }) {
   return (
     <>
-      <ExpertisesHero />
-      <section aria-label="Nos neuf expertises" className="tone-light bg-canvas text-fg">
+      <ExpertisesHero locale={locale} />
+      <section aria-label={copy[locale].list} className="tone-light bg-canvas text-fg">
         <Container>
           {expertiseGroups.map((group) => (
-            <ExpertiseGroup key={group.id} group={group} />
+            <ExpertiseGroup key={group.id} group={group} locale={locale} />
           ))}
         </Container>
       </section>
-      <Method />
-      <ExpertisesCta />
+      <Method locale={locale} />
+      <ExpertisesCta locale={locale} />
     </>
   );
 }

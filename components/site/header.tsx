@@ -6,18 +6,25 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Logo } from "@/components/site/logo";
+import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { Container } from "@/components/ui/container";
 import { IconButton } from "@/components/ui/icon-button";
 import { Link } from "@/components/ui/link";
 import { RevealItem } from "@/components/ui/reveal";
 import { cn } from "@/lib/cn";
+import { localizeHref, stripLocale, type Locale } from "@/lib/i18n";
 import { DURATION, EASE_EVENTIA } from "@/lib/motion";
-import { navigation, signature, siteConfig, type SectionId } from "@/lib/site";
+import { getNavigation, getSiteText, siteConfig, type SectionId } from "@/lib/site";
 import { useScrolledPast } from "@/lib/use-scrolled-past";
 
 const MENU_ID = "menu-principal";
 const DESKTOP_QUERY = "(min-width: 80rem)";
 const DARK_HERO_ROUTES = ["/", "/expertises", "/realisations", "/equipe", "/recrutement", "/contact"];
+
+const labels = {
+  fr: { open: "Ouvrir le menu", close: "Fermer le menu", mainNav: "Navigation principale", menuNav: "Menu principal" },
+  en: { open: "Open the menu", close: "Close the menu", mainNav: "Main navigation", menuNav: "Main menu" },
+} satisfies Record<Locale, Record<string, string>>;
 
 const menuVariants: Variants = {
   hidden: { opacity: 0, transition: { duration: DURATION.base, ease: EASE_EVENTIA } },
@@ -27,7 +34,7 @@ const menuVariants: Variants = {
   },
 };
 
-function useActiveSection() {
+function useActiveSection(navigation: ReturnType<typeof getNavigation>) {
   const pathname = usePathname();
   const [active, setActive] = useState<SectionId>("accueil");
 
@@ -48,21 +55,26 @@ function useActiveSection() {
 
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
-  }, [pathname]);
+  }, [pathname, navigation]);
 
   return navigation.find(({ href }) => href === pathname)?.id ?? active;
 }
 
-export function Header() {
+export function Header({ locale }: { locale: Locale }) {
   const headerRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const isScrolled = useScrolledPast(8);
-  const activeSection = useActiveSection();
+  const text = getSiteText(locale);
+  const t = labels[locale];
+  const navigation = getNavigation(locale);
+  const activeSection = useActiveSection(navigation);
   const reduceMotion = useReducedMotion();
+  const homeHref = localizeHref("/#accueil", locale);
+  const ctaHref = localizeHref(siteConfig.primaryCtaHref, locale);
   // Pages opening on a dark hero keep the bar transparent with light text until the user scrolls.
-  const isOverHero = DARK_HERO_ROUTES.includes(usePathname()) && !isScrolled;
+  const isOverHero = DARK_HERO_ROUTES.includes(stripLocale(usePathname())) && !isScrolled;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -138,9 +150,9 @@ export function Header() {
     >
       <Container className="flex h-(--header-height) items-center gap-6">
         <NextLink
-          href="/#accueil"
-          aria-label={`${siteConfig.name} — retour à l’accueil`}
-          onClick={(event) => navigateFromMenu(event, "/#accueil")}
+          href={homeHref}
+          aria-label={`${siteConfig.name} — ${text.backHome}`}
+          onClick={(event) => navigateFromMenu(event, homeHref)}
           className="flex shrink-0 items-center gap-3 rounded-media"
         >
           <Logo preload />
@@ -149,7 +161,7 @@ export function Header() {
           </span>
         </NextLink>
 
-        <nav aria-label="Navigation principale" className="ml-auto hidden xl:block">
+        <nav aria-label={t.mainNav} className="ml-auto hidden xl:block">
           <ul className="flex items-center gap-8">
             {navigation.map(({ id, label, href }) => {
               const isActive = activeSection === id;
@@ -173,26 +185,28 @@ export function Header() {
           </ul>
         </nav>
 
-        <div className="ml-auto hidden sm:block xl:ml-4">
+        <LanguageSwitcher locale={locale} className="ml-auto xl:ml-6" />
+
+        <div className="hidden sm:block">
           <Link
-            href={siteConfig.primaryCta.href}
+            href={ctaHref}
             appearance="primary"
-            onClick={(event) => navigateFromMenu(event, siteConfig.primaryCta.href)}
+            onClick={(event) => navigateFromMenu(event, ctaHref)}
             className="animate-cta-pulse hover:animate-none focus-visible:animate-none"
           >
-            {siteConfig.primaryCta.label}
+            {text.primaryCta}
           </Link>
         </div>
 
         <IconButton
           ref={toggleRef}
-          label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          label={isOpen ? t.close : t.open}
           icon={isOpen ? <X /> : <Menu />}
           variant="ghost"
           aria-expanded={isOpen}
           aria-controls={MENU_ID}
           onClick={() => setIsOpen((open) => !open)}
-          className="-mr-2 ml-auto sm:ml-0 xl:hidden"
+          className="-mr-2 xl:hidden"
         />
       </Container>
 
@@ -208,7 +222,7 @@ export function Header() {
             className="tone-deep fixed inset-x-0 top-(--header-height) bottom-0 overflow-y-auto overscroll-contain bg-canvas text-fg xl:hidden"
           >
             <Container className="flex min-h-full flex-col gap-10 pt-4 pb-10">
-              <nav aria-label="Menu principal">
+              <nav aria-label={t.menuNav}>
                 <ol>
                   {navigation.map(({ id, label, href }, index) => {
                     const isActive = activeSection === id;
@@ -236,13 +250,13 @@ export function Header() {
 
               <RevealItem className="sm:hidden">
                 <Link
-                  href={siteConfig.primaryCta.href}
+                  href={ctaHref}
                   appearance="primary"
                   size="lg"
-                  onClick={(event) => navigateFromMenu(event, siteConfig.primaryCta.href)}
+                  onClick={(event) => navigateFromMenu(event, ctaHref)}
                   className="w-full"
                 >
-                  {siteConfig.primaryCta.label}
+                  {text.primaryCta}
                 </Link>
               </RevealItem>
 
@@ -251,7 +265,7 @@ export function Header() {
                 <Link href={siteConfig.contact.phoneHref}>{siteConfig.contact.phoneDisplay}</Link>
                 <p>{siteConfig.contact.address}</p>
                 <p className="pt-4 text-eyebrow text-accent uppercase">
-                  {signature.map((word) => `${word}.`).join(" ")}
+                  {text.signature.map((word) => `${word}.`).join(" ")}
                 </p>
               </RevealItem>
             </Container>
